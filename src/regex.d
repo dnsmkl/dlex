@@ -7,21 +7,86 @@ import regex_implementation.nfa;
 import regex_implementation.to_dfa;
 import regex_implementation.dfa;
 
-import std.stdio;
 
-void main()
+//void main()
+//{
+
+//}
+
+
+struct Regex
 {
-	auto pattern = "(ab)*ab";
-	auto ast = parse(pattern);
-	auto nfa = getNFA(ast);
-	auto dfa = toDfa(nfa);
+	alias regex_implementation.dfa.DFA!(regex_implementation.nfa.NFA.StateId) Dfa;
+	Dfa dfa;
+	NFA nfa;
+	RegexAST ast;
 
-	writeln(dfa.checkWord("a"));
-	writeln(dfa.checkWord("ab"));
-	writeln(dfa.checkWord("aba"));
-	writeln(dfa.checkWord("abab"));
-	writeln(dfa.checkWord("ababa"));
-	writeln(dfa.checkWord("ababab"));
-	writeln(dfa.checkWord("abababa"));
+	this(string regexPattern)
+	{
+		this.ast = parse(regexPattern);
+		this.nfa = getNFA(ast);
+		this.dfa = toDfa(nfa);
+	}
 
+	bool matchExact(string text)
+	{
+		return dfa.checkWord(text);
+	}
+
+	string dumpDFA()
+	{
+		import std.stdio;
+		writeln("regex1");
+		auto r = dfa.toString();
+		writeln("regex2");
+		return r;
+	}
+
+	string dumpNFA()
+	{
+		return nfa.toString();
+	}
+
+	string dumpAST()
+	{
+		return ast.toString();
+	}
+}
+
+//version(none)
+unittest
+{
+	auto testSequence = Regex("aaab");
+	assert( testSequence.matchExact("aaab"));
+	assert(!testSequence.matchExact("aaa"));
+	assert(!testSequence.matchExact("aaaba"));
+
+	auto testRepeat = Regex("(ab)*");
+	assert( testRepeat.matchExact(""));
+	assert(!testRepeat.matchExact("a"));
+	assert( testRepeat.matchExact("ab"));
+	assert(!testRepeat.matchExact("aba"));
+	assert( testRepeat.matchExact("abab"));
+	assert(!testRepeat.matchExact("ababa"));
+	assert( testRepeat.matchExact("ababab"));
+	assert(!testRepeat.matchExact("abababa"));
+
+	import std.stdio;
+	auto testOr = Regex("(ab)|(ba)");
+	assert( testOr.matchExact("ba"));
+	assert( testOr.matchExact("ab"));
+	assert(!testOr.matchExact("aa"));
+	assert(!testOr.matchExact("bb"));
+	assert(!testOr.matchExact("baba"));
+	assert(!testOr.matchExact("abab"));
+
+	auto testMix = Regex("((ab*)|b)*aaa");
+	assert(!testMix.matchExact(""));
+	assert( testMix.matchExact("aaa"));
+	assert( testMix.matchExact("baaa"));
+	assert( testMix.matchExact("abaaa"));
+	assert( testMix.matchExact("abbaaa"));
+	assert( testMix.matchExact("babaaa"));
+	assert( testMix.matchExact("babbaaa"));
+	assert( testMix.matchExact("bbbaaa"));
 }

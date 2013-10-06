@@ -94,6 +94,7 @@ class DFA(StateIdNFA)
 	{
 		import std.conv;
 		string r = "\n-- DFA.toString --";
+		r ~= "\nStart @ " ~ to!string(start);
 		foreach(StateId sourceStateId, StateId[char] charToTargetId; transitions)
 		{
 
@@ -104,6 +105,10 @@ class DFA(StateIdNFA)
 					~ " -> " ~ stateIdToString(targetStateId);
 			}
 		}
+
+		r ~= "\nEnds:";
+		foreach(StateId s; ends) r ~= "\n  " ~ stateIdToString(s);
+
 		r ~= ("\n-- ============ --");
 		return r;
 	}
@@ -128,14 +133,17 @@ class DFA(StateIdNFA)
 		int i;// in case of blow-up
 		foreach(char c; text)
 		{
-			auto transitionExists = c in transitions[currentState];
-			if( !transitionExists ) return false;
-
+			if( currentState !in transitions ) return false;
+			if( c !in transitions[currentState] ) return false;
 			currentState = transitions[currentState][c];
 		}
 		return isAcceptedEnd(currentState);
 	}
 }
+
+
+
+version(none)
 unittest
 {
 	import std.stdio;

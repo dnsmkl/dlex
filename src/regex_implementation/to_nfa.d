@@ -63,7 +63,7 @@ NFA getNFA(ast.Or rasts)
 
 
 
-
+version(none)
 unittest
 {
 	import std.stdio:writeln;

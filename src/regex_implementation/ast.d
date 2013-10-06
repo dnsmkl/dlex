@@ -29,7 +29,6 @@ class Sequence:RegexAST
 	{
 		import std.array;
 		import std.algorithm;
-
 		return "Seq["
 			~ join
 			(
@@ -45,9 +44,10 @@ class Sequence:RegexAST
 class Or:RegexAST
 {
 	RegexAST[] regexASTs;
-	this(RegexAST[] regexASTs...)
+	this(RegexAST regexAST1, RegexAST regexAST2)
 	{
-		this.regexASTs = regexASTs;
+		this.regexASTs ~= regexAST1;
+		this.regexASTs ~= regexAST2;
 	}
 
 
@@ -56,13 +56,8 @@ class Or:RegexAST
 	{
 		import std.array;
 		import std.algorithm;
-
 		return "Or{"
-			~ join
-			(
-				map!"a.toString()"(regexASTs)
-				,"|"
-			)
+			~ join(map!"a.toString()"(regexASTs),"|")
 			~ "}";
 	}
 }
@@ -72,7 +67,7 @@ class Or:RegexAST
 class Repeat:RegexAST
 {
 	RegexAST repeatableRegexAST;
-	this(RegexAST repeatableRegexAST...)
+	this(RegexAST repeatableRegexAST)
 	{
 		this.repeatableRegexAST = repeatableRegexAST;
 	}
@@ -122,7 +117,7 @@ class Letter:RegexAST
 }
 
 // TODO: Implement RepeatBounded, which can be converted to Optional + lots of copying
-
+version(none)
 unittest
 {
 	import std.stdio;

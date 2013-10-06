@@ -4,17 +4,18 @@ module regex_implementation.parser;
 import regex_implementation.ast;
 alias regex_implementation.ast ast;
 
+
 ast.RegexAST parse(string regexText)
 {
 	size_t startAt = 0;
 	return subParse(regexText, startAt);
+
 }
 
+import std.stdio;
 ast.RegexAST subParse(string regexText, ref size_t ix)
 {
 	ast.RegexAST[] accumulator;
-
-	//foreach(ix, c; regexText)
 	for(; ix<regexText.length; ++ix)
 	{
 		char c = regexText[ix];
@@ -31,12 +32,19 @@ ast.RegexAST subParse(string regexText, ref size_t ix)
 		}
 		else if(isGroupStart(c))
 		{
-			ix++; //   <<---- INDEX MANIPULDATION!!!!!!!!
+			++ix; //   <<---- INDEX MANIPULDATION!!!!!!!!
 			accumulator ~= subParse(regexText, ix);
 		}
 		else if(isGroupEnd(c))
 		{
 			return makeSeqOnlyIfNeeded(accumulator);
+		}
+		else if(isAlteration(c))
+		{
+			auto lastIx = accumulator.length-1;
+			auto last = accumulator[lastIx];
+			++ix; //   <<---- INDEX MANIPULDATION!!!!!!!!
+			accumulator[lastIx] = new ast.Or(last, subParse(regexText, ix));
 		}
 	}
 	return makeSeqOnlyIfNeeded(accumulator);
@@ -66,13 +74,18 @@ bool isGroupEnd(char c)
 	return c==')';
 }
 
+bool isAlteration(char c)
+{
+	return c=='|';
+}
+
 bool isLetter(char c)
 {
-	return c!='*' && c!='(' && c!=')';
+	return c!='*' && c!='(' && c!=')' && c!='|';
 }
 
 
-
+version(none)
 unittest
 {
 	import std.stdio;
@@ -93,59 +106,5 @@ unittest
 	writeln( "---------------------------------------" );
 	writeln( "\n" );
 }
-
-
-
-
-
-
-/+
-struct Tokenizer
-{
-	string inputText;
-
-	@property
-	bool empty()
-	{
-		import std.array:empty;
-		return empty(inputText);
-	}
-
-	string front()
-	{
-		return [inputText[0]];
-	}
-
-	void popFront()
-	{
-		inputText = inputText[1 .. $];
-	}
-
-}
-unittest
-{
-	import std.stdio;
-
-	import std.range:isInputRange;
-	assert(isInputRange!(Tokenizer),"isInputRange!(Tokenizer) failed");
-
-	writeln( "\n" );
-	writeln( "---------------------------------------" );
-	writeln( "-- regex_parser.Tokenizer - unittest --" );
-	writeln( "\n" );
-
-
-	foreach(x; Tokenizer("(a(b)+)*"))
-	{
-		writeln(x);
-	}
-
-
-	writeln( "\n" );
-	writeln( "-- regex_parser.Tokenizer - unittest --" );
-	writeln( "---------------------------------------" );
-	writeln( "\n" );
-}
-+/
 
 

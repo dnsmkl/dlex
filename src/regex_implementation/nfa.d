@@ -9,8 +9,8 @@ struct NFA
 {
 	alias char AlphaElement;
 	immutable AlphaElement[] alphabet
-		= ['a','b'];
-//		= ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
+//		= ['a','b'];
+		= ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','|'];
 	alias size_t StateId;
 	StateId[] states;
 	StateId[] starts;
@@ -291,7 +291,7 @@ struct NFA
 		return r[0 .. r.length-1];
 	}
 }
-//version(none)
+version(none)
 unittest
 {
 	auto nfaSeq1 = NFA('a','b');

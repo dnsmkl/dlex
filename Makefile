@@ -2,8 +2,11 @@
 
 #regex
 test-regex:
-	rdmd -unittest src/regex.d
+	rdmd -unittest --main --force src/regex.d
 
+debug-regex:
+	dmd -of"regex" -unittest -g src/regex.d src/regex_implementation/*
+	gdb regex
 
 
 # ast

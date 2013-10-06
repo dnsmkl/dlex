@@ -93,6 +93,7 @@ NFA.StateId[] dfaStateToNFAStates(DFA!(NFA.StateId).State dfaState)
 }
 
 
+version(none)
 unittest
 {
 	import std.stdio;
