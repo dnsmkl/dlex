@@ -3,23 +3,6 @@ module regex_implementation.nfa;
 
 import std.array;
 
-
-/*
-Simplified regex parser.
-	In the end should be able:
-		* - repeat 0 or more
-		|
-		() - group things
-*/
-
-
-// plan:  RegexParser -> RegexAST -> NFA -> DFA -> match
-
-
-
-
-
-
 /* Nondeterministic finate automaton */
 /* PROPOSAL: it could be split up into NFA & NFALinearStream */
 struct NFA
