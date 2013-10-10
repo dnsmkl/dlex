@@ -85,26 +85,24 @@ bool isLetter(char c)
 }
 
 
-version(none)
 unittest
 {
-	import std.stdio;
+	void assertParsedAST(string patternString, string expectedASTsString )
+	{
+		assert( parse(patternString).toString == expectedASTsString );
+	}
 
+	assertParsedAST("a"     , "L(a)");
+	assertParsedAST("a**"   , "Rep(Rep(L(a)))");
+	assertParsedAST("ab"    , "Seq[L(a),L(b)]");
+	assertParsedAST("abc"   , "Seq[L(a),L(b),L(c)]");
+	assertParsedAST("ab*"   , "Seq[L(a),Rep(L(b))]");
+	assertParsedAST("(ab)*" , "Rep(Seq[L(a),L(b)])");
+	assertParsedAST("a|b"   , "Or{L(a)|L(b)}");
 
-	writeln( "\n" );
-	writeln( "---------------------------------------" );
-	writeln( "-- regex_parser - unittest --" );
-	writeln( "\n" );
-
-	//auto pattern = "a";
-	auto pattern = "(a)**a";
-	writeln("Patern='" ~ pattern ~ "' parses into:");
-	writeln(parse(pattern));
-
-	writeln( "\n" );
-	writeln( "-- regex_parser - unittest --" );
-	writeln( "---------------------------------------" );
-	writeln( "\n" );
+	// TODO: make alteration lower priority then sequence
+	// i.e. assertParsedAST("aa|b"  , "Or{Seq[L(a),L(a)]|L(b)}");
+	// or   assert( equals( parse("aa|b"), parse("(aa)|b") ) ); // deep comparison should match
+	assertParsedAST("aa|b"  , "Seq[L(a),Or{L(a)|L(b)}]");
+	assertParsedAST("(aa)|b", "Or{Seq[L(a),L(a)]|L(b)}");
 }
-
-
