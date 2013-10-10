@@ -12,77 +12,60 @@ ast.RegexAST parse(string regexText)
 
 }
 
-import std.stdio;
-ast.RegexAST subParse(string regexText, ref size_t ix)
+
+private
+RegexAST subParse(string regexText, ref size_t ix)
 {
-	ast.RegexAST[] accumulator;
+	ast.RegexAST[] resultAccumulator;
 	for(; ix<regexText.length; ++ix)
 	{
 		char c = regexText[ix];
 
-		if(isLetter(c))
+		switch(c)
 		{
-			ast.RegexAST newSubAst = new ast.Letter(c);
-			accumulator ~= newSubAst ;
-		}
-		else if(isRepeat(c))
-		{
-			auto lastIx = accumulator.length-1;
-			accumulator[lastIx] = new ast.Repeat(accumulator[lastIx]); // transform into repeat
-		}
-		else if(isGroupStart(c))
-		{
-			++ix; //   <<---- INDEX MANIPULDATION!!!!!!!!
-			accumulator ~= subParse(regexText, ix);
-		}
-		else if(isGroupEnd(c))
-		{
-			return makeSeqOnlyIfNeeded(accumulator);
-		}
-		else if(isAlteration(c))
-		{
-			auto lastIx = accumulator.length-1;
-			auto last = accumulator[lastIx];
-			++ix; //   <<---- INDEX MANIPULDATION!!!!!!!!
-			accumulator[lastIx] = new ast.Or(last, subParse(regexText, ix));
+			/* sequence start */
+			case '(':
+				++ix; //   <<---- INDEX MANIPULATION!!!!!!!!
+				resultAccumulator ~= subParse(regexText, ix);
+			break;
+
+			/* sequence end */
+			case ')':
+				return makeSeqOnlyIfNeeded(resultAccumulator);
+			break;
+
+			/* repeat */
+			case '*':
+				auto lastIx = resultAccumulator.length-1;
+				resultAccumulator[lastIx] = new ast.Repeat(resultAccumulator[lastIx]); // transform into repeat
+			break;
+
+			/* alteration */
+			case '|':
+				auto lastIx = resultAccumulator.length-1;
+				auto last = resultAccumulator[lastIx];
+				++ix; //   <<---- INDEX MANIPULATION!!!!!!!!
+				resultAccumulator[lastIx] = new ast.Or(last, subParse(regexText, ix));
+			break;
+
+			/* simple letter */
+			default:
+				resultAccumulator ~= new ast.Letter(c);
 		}
 	}
-	return makeSeqOnlyIfNeeded(accumulator);
+	return makeSeqOnlyIfNeeded(resultAccumulator);
 }
 
 
-ast.RegexAST makeSeqOnlyIfNeeded(ast.RegexAST[] accumulator...)
+private
+ast.RegexAST makeSeqOnlyIfNeeded(ast.RegexAST[] resultAccumulator...)
 {
-	if(accumulator.length==1) return accumulator[0];
-	else if(accumulator.length>=2) return new ast.Sequence(accumulator);
+	if(resultAccumulator.length==1) return resultAccumulator[0];
+	else if(resultAccumulator.length>=2) return new ast.Sequence(resultAccumulator);
 	assert(0);
 }
 
 
-bool isRepeat(char c)
-{
-	return c=='*';
-}
-
-bool isGroupStart(char c)
-{
-	return c=='(';
-}
-
-bool isGroupEnd(char c)
-{
-	return c==')';
-}
-
-bool isAlteration(char c)
-{
-	return c=='|';
-}
-
-bool isLetter(char c)
-{
-	return c!='*' && c!='(' && c!=')' && c!='|';
-}
 
 
 unittest
@@ -93,6 +76,7 @@ unittest
 	}
 
 	assertParsedAST("a"     , "L(a)");
+	assertParsedAST("(a)"   , "L(a)");
 	assertParsedAST("a**"   , "Rep(Rep(L(a)))");
 	assertParsedAST("ab"    , "Seq[L(a),L(b)]");
 	assertParsedAST("abc"   , "Seq[L(a),L(b),L(c)]");
@@ -103,6 +87,7 @@ unittest
 	// TODO: make alteration lower priority then sequence
 	// i.e. assertParsedAST("aa|b"  , "Or{Seq[L(a),L(a)]|L(b)}");
 	// or   assert( equals( parse("aa|b"), parse("(aa)|b") ) ); // deep comparison should match
-	assertParsedAST("aa|b"  , "Seq[L(a),Or{L(a)|L(b)}]");
+	assertParsedAST("aa|b"  , "Seq[L(a),Or{L(a)|L(b)}]"); // FIXME
+
 	assertParsedAST("(aa)|b", "Or{Seq[L(a),L(a)]|L(b)}");
 }
