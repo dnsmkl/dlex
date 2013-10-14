@@ -83,6 +83,7 @@ unittest
 	assertParsedAST("ab*"   , "Seq[L(a),Rep(L(b))]");
 	assertParsedAST("(ab)*" , "Rep(Seq[L(a),L(b)])");
 	assertParsedAST("a|b"   , "Or{L(a)|L(b)}");
+	assertParsedAST("a|ba"   , "Or{L(a)|Seq[L(b),L(a)]}");
 
 	// TODO: make alteration lower priority then sequence
 	// i.e. assertParsedAST("aa|b"  , "Or{Seq[L(a),L(a)]|L(b)}");

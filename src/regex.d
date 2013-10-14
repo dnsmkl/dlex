@@ -71,7 +71,6 @@ unittest
 	assert( testRepeat.matchExact("ababab"));
 	assert(!testRepeat.matchExact("abababa"));
 
-	import std.stdio;
 	auto testOr = Regex("(ab)|(ba)");
 	assert( testOr.matchExact("ba"));
 	assert( testOr.matchExact("ab"));
@@ -89,4 +88,16 @@ unittest
 	assert( testMix.matchExact("babaaa"));
 	assert( testMix.matchExact("babbaaa"));
 	assert( testMix.matchExact("bbbaaa"));
+
+
+	/* Following tests are just to capture current behaviour.
+	   Such behaviour could/should be improved */
+	auto testUnfinishedSequence = Regex("((aaab");
+	assert( testUnfinishedSequence.matchExact("aaab"));
+	assert(!testUnfinishedSequence.matchExact("aaa"));
+	assert(!testUnfinishedSequence.matchExact("aaaba"));
+
+	auto testOr2 = Regex("(ab)|ba");
+	assert( testOr2.matchExact("ba"));
+	assert( testOr2.matchExact("ab"));
 }
