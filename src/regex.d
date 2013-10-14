@@ -8,11 +8,6 @@ import regex_implementation.to_dfa;
 import regex_implementation.dfa;
 
 
-//void main()
-//{
-
-//}
-
 
 struct Regex
 {
@@ -53,7 +48,7 @@ struct Regex
 	}
 }
 
-//version(none)
+
 unittest
 {
 	auto testSequence = Regex("aaab");
