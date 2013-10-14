@@ -8,25 +8,29 @@ alias regex_implementation.ast ast;
 ast.RegexAST parse(string regexText)
 {
 	size_t startAt = 0;
-	return subParse(regexText, startAt);
+	return recursiveParse(regexText, startAt);
 
 }
 
 
+
+/* Recursive parse, that starts at specified index
+   Note: Index is incremented to notify calling frame, how much input was parsed
+*/
 private
-RegexAST subParse(string regexText, ref size_t ix)
+RegexAST recursiveParse(string regexText, ref size_t currentChar)
 {
 	ast.RegexAST[] resultAccumulator;
-	for(; ix<regexText.length; ++ix)
+	for(; currentChar<regexText.length; ++currentChar)
 	{
-		char c = regexText[ix];
+		char c = regexText[currentChar];
 
 		switch(c)
 		{
 			/* sequence start */
 			case '(':
-				++ix; //   <<---- INDEX MANIPULATION!!!!!!!!
-				resultAccumulator ~= subParse(regexText, ix);
+				++currentChar; //   <<---- INDEX MANIPULATION!!!!!!!!
+				resultAccumulator ~= recursiveParse(regexText, currentChar);
 			break;
 
 			/* sequence end */
@@ -44,8 +48,8 @@ RegexAST subParse(string regexText, ref size_t ix)
 			case '|':
 				auto lastIx = resultAccumulator.length-1;
 				auto last = resultAccumulator[lastIx];
-				++ix; //   <<---- INDEX MANIPULATION!!!!!!!!
-				resultAccumulator[lastIx] = new ast.Or(last, subParse(regexText, ix));
+				++currentChar; //   <<---- INDEX MANIPULATION!!!!!!!!
+				resultAccumulator[lastIx] = new ast.Or(last, recursiveParse(regexText, currentChar));
 			break;
 
 			/* simple letter */
