@@ -77,7 +77,10 @@ unittest
 {
 	void assertParsedAST(string patternString, string expectedASTsString )
 	{
-		assert( parse(patternString).toString == expectedASTsString );
+		assert( parse(patternString).toString == expectedASTsString
+			, patternString
+			~ " gives " ~ parse(patternString).toString
+			~ " vs expected " ~ expectedASTsString );
 	}
 
 	assertParsedAST("a"     , "L(a)");
