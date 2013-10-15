@@ -63,7 +63,7 @@ RegexAST recursiveParse(string regexText, ref size_t currentChar)
 
 
 private
-ast.RegexAST makeSeqOnlyIfNeeded(ast.RegexAST[] resultAccumulator...)
+ast.RegexAST makeSeqOnlyIfNeeded(ast.RegexAST[] resultAccumulator)
 {
 	if(resultAccumulator.length==1) return resultAccumulator[0];
 	else if(resultAccumulator.length>=2) return new ast.Sequence(resultAccumulator);

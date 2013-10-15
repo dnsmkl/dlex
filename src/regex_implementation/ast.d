@@ -13,7 +13,7 @@ class Sequence:RegexAST
 	RegexAST[] sequenceOfRegexASTs;
 
 
-	this(RegexAST[] sequenceOfRegexASTs...)
+	this(RegexAST[] sequenceOfRegexASTs)
 	{
 		this.sequenceOfRegexASTs = sequenceOfRegexASTs;
 	}
@@ -85,7 +85,7 @@ class Repeat:RegexAST
 class Optional:RegexAST
 {
 	RegexAST optionalRegexAST;
-	this(RegexAST optionalRegexAST...)
+	this(RegexAST optionalRegexAST)
 	{
 		this.optionalRegexAST = optionalRegexAST;
 	}
