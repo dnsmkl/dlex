@@ -66,13 +66,21 @@ unittest
 	assert( testRepeat.matchExact("ababab"));
 	assert(!testRepeat.matchExact("abababa"));
 
-	auto testOr = Regex("(ab)|(ba)");
-	assert( testOr.matchExact("ba"));
-	assert( testOr.matchExact("ab"));
-	assert(!testOr.matchExact("aa"));
-	assert(!testOr.matchExact("bb"));
-	assert(!testOr.matchExact("baba"));
-	assert(!testOr.matchExact("abab"));
+	auto testOrWithParanthesis = Regex("(ab)|(ba)");
+	assert( testOrWithParanthesis.matchExact("ba"));
+	assert( testOrWithParanthesis.matchExact("ab"));
+	assert(!testOrWithParanthesis.matchExact("aa"));
+	assert(!testOrWithParanthesis.matchExact("bb"));
+	assert(!testOrWithParanthesis.matchExact("baba"));
+	assert(!testOrWithParanthesis.matchExact("abab"));
+
+	auto testOrWithoutParanthesis = Regex("ab|ba");
+	assert( testOrWithoutParanthesis.matchExact("ba"));
+	assert( testOrWithoutParanthesis.matchExact("ab"));
+	assert(!testOrWithoutParanthesis.matchExact("aa"));
+	assert(!testOrWithoutParanthesis.matchExact("bb"));
+	assert(!testOrWithoutParanthesis.matchExact("baba"));
+	assert(!testOrWithoutParanthesis.matchExact("abab"));
 
 	auto testMix = Regex("((ab*)|b)*aaa");
 	assert(!testMix.matchExact(""));
@@ -84,15 +92,10 @@ unittest
 	assert( testMix.matchExact("babbaaa"));
 	assert( testMix.matchExact("bbbaaa"));
 
-
 	/* Following tests are just to capture current behaviour.
 	   Such behaviour could/should be improved */
 	auto testUnfinishedSequence = Regex("((aaab");
 	assert( testUnfinishedSequence.matchExact("aaab"));
 	assert(!testUnfinishedSequence.matchExact("aaa"));
 	assert(!testUnfinishedSequence.matchExact("aaaba"));
-
-	auto testOr2 = Regex("(ab)|ba");
-	assert( testOr2.matchExact("ba"));
-	assert( testOr2.matchExact("ab"));
 }
