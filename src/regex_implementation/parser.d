@@ -46,10 +46,11 @@ RegexAST recursiveParse(string regexText, ref size_t currentChar)
 
 			/* alteration */
 			case '|':
-				auto lastIx = resultAccumulator.length-1;
-				auto last = resultAccumulator[lastIx];
+				// without ".dup" it goes into infinite recursion with ast.Sequence.toString
+				auto resultAsSingleNode = makeSeqOnlyIfNeeded(resultAccumulator.dup);
+				resultAccumulator.length = 1;
 				++currentChar; //   <<---- INDEX MANIPULATION!!!!!!!!
-				resultAccumulator[lastIx] = new ast.Or(last, recursiveParse(regexText, currentChar));
+				resultAccumulator[0] = new ast.Or(resultAsSingleNode, recursiveParse(regexText, currentChar));
 			break;
 
 			/* simple letter */
@@ -87,12 +88,7 @@ unittest
 	assertParsedAST("ab*"   , "Seq[L(a),Rep(L(b))]");
 	assertParsedAST("(ab)*" , "Rep(Seq[L(a),L(b)])");
 	assertParsedAST("a|b"   , "Or{L(a)|L(b)}");
-	assertParsedAST("a|ba"   , "Or{L(a)|Seq[L(b),L(a)]}");
-
-	// TODO: make alteration lower priority then sequence
-	// i.e. assertParsedAST("aa|b"  , "Or{Seq[L(a),L(a)]|L(b)}");
-	// or   assert( equals( parse("aa|b"), parse("(aa)|b") ) ); // deep comparison should match
-	assertParsedAST("aa|b"  , "Seq[L(a),Or{L(a)|L(b)}]"); // FIXME
-
+	assertParsedAST("a|ba"  , "Or{L(a)|Seq[L(b),L(a)]}");
+	assertParsedAST("aa|b"  , "Or{Seq[L(a),L(a)]|L(b)}");
 	assertParsedAST("(aa)|b", "Or{Seq[L(a),L(a)]|L(b)}");
 }
