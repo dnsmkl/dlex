@@ -11,9 +11,6 @@ class DFA(StateIdNFA)
 
 
 	alias char AlphaElement;
-	immutable AlphaElement[] alphabet
-		= ['a','b'];
-	//		= ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
 	alias RedBlackTree!(StateIdNFA) State;
 	alias size_t StateId;
 	alias redBlackTree!(StateIdNFA) makeState;

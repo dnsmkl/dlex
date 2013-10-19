@@ -31,9 +31,7 @@ struct Regex
 	string dumpDFA()
 	{
 		import std.stdio;
-		writeln("regex1");
 		auto r = dfa.toString();
-		writeln("regex2");
 		return r;
 	}
 
@@ -91,6 +89,7 @@ unittest
 	assert( testMix.matchExact("babaaa"));
 	assert( testMix.matchExact("babbaaa"));
 	assert( testMix.matchExact("bbbaaa"));
+
 
 	/* Following tests are just to capture current behaviour.
 	   Such behaviour could/should be improved */
