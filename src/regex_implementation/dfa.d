@@ -152,49 +152,40 @@ class DFA(StateIdNFA)
 
 
 
-version(none)
+
 unittest
 {
-	import std.stdio;
-	import regex_implementation.nfa;
-	auto dfa = new DFA!(NFA.StateId)();
+	auto dfa = new DFA!(int)();
 
-	dfa.addTransitionFromNFA([1,3], 'a', [2,4]);
-	dfa.addTransitionFromNFA([2,4], 'b', [3,5]);
-	dfa.addTransitionFromNFA([3,5], 'a', [2,4]);
+	dfa.addTransitionFromNFA([0], 'a', [1]);
+	dfa.addTransitionFromNFA([1], 'b', [2]); // Already acceptable end
+	dfa.addTransitionFromNFA([2], 'a', [1]); // Loop back
 
-	dfa.start = dfa.getStateId(1,3);
-	dfa.ends = [dfa.getStateId(3,5)];
+	dfa.start = dfa.getStateId(0);
+	dfa.ends = [dfa.getStateId(2)];
 
-	void testWord(string word){
-		writeln("\n\ndfa.checkWord(\"" ~ word ~ "\")");
-		writeln(dfa.checkWord(word));
-	}
+	assert(!dfa.checkWord(""));
+	assert(!dfa.checkWord("a"));
+	assert(!dfa.checkWord("b"));
+	assert( dfa.checkWord("ab"));
+	assert(!dfa.checkWord("aba"));
+	assert( dfa.checkWord("abab"));
+	assert(!dfa.checkWord("ababa"));
+	assert( dfa.checkWord("ababab"));
 
-	writeln(" DFA DFA ");
-	writeln(dfa);
+	assert( dfa.countPartialMatch("") == size_t.max);
+	assert( dfa.countPartialMatch("a") == size_t.max);
+	assert( dfa.countPartialMatch("b") == size_t.max);
+	assert( dfa.countPartialMatch("ab") == 2);
+	assert( dfa.countPartialMatch("aba") == 2);
+	assert( dfa.countPartialMatch("abab") == 4);
+	assert( dfa.countPartialMatch("ababa") == 4);
+	assert( dfa.countPartialMatch("ababab") == 6);
 
-	testWord("a");
-	testWord("b");
-	testWord("ab");
-	testWord("aba");
-	testWord("abab");
-	testWord("ababa");
-	testWord("ababab");
-
-
-	void testPartialMatch(string word){
-		writeln("\n\ndfa.countPartialMatch(\"" ~ word ~ "\")");
-		writeln(dfa.countPartialMatch(word));
-	}
-
-	testPartialMatch("a");
-	testPartialMatch("b");
-	testPartialMatch("ab");
-	testPartialMatch("aba");
-	testPartialMatch("abab");
-	testPartialMatch("ababa");
-	testPartialMatch("ababab");
+	// test acceptability of empty string
+	dfa.ends = [dfa.getStateId(2),dfa.getStateId(0)];
+	assert( dfa.checkWord(""));
+	assert( dfa.countPartialMatch("") == 0);
 }
 
 
