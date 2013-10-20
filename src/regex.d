@@ -25,7 +25,7 @@ struct Regex
 
 	bool matchExact(string text)
 	{
-		return dfa.checkWord(text);
+		return dfa.fullMatch(text);
 	}
 
 	string dumpDFA()

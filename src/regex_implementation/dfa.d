@@ -124,7 +124,7 @@ class DFA(StateIdNFA)
 	}
 
 
-	bool checkWord(string text)
+	bool fullMatch(string text)
 	{
 		return countPartialMatch(text) == text.length;
 	}
@@ -164,14 +164,14 @@ unittest
 	dfa.start = dfa.getStateId(0);
 	dfa.ends = [dfa.getStateId(2)];
 
-	assert(!dfa.checkWord(""));
-	assert(!dfa.checkWord("a"));
-	assert(!dfa.checkWord("b"));
-	assert( dfa.checkWord("ab"));
-	assert(!dfa.checkWord("aba"));
-	assert( dfa.checkWord("abab"));
-	assert(!dfa.checkWord("ababa"));
-	assert( dfa.checkWord("ababab"));
+	assert(!dfa.fullMatch(""));
+	assert(!dfa.fullMatch("a"));
+	assert(!dfa.fullMatch("b"));
+	assert( dfa.fullMatch("ab"));
+	assert(!dfa.fullMatch("aba"));
+	assert( dfa.fullMatch("abab"));
+	assert(!dfa.fullMatch("ababa"));
+	assert( dfa.fullMatch("ababab"));
 
 	assert( dfa.countPartialMatch("") == size_t.max);
 	assert( dfa.countPartialMatch("a") == size_t.max);
@@ -184,7 +184,7 @@ unittest
 
 	// test acceptability of empty string
 	dfa.ends = [dfa.getStateId(2),dfa.getStateId(0)];
-	assert( dfa.checkWord(""));
+	assert( dfa.fullMatch(""));
 	assert( dfa.countPartialMatch("") == 0);
 }
 
