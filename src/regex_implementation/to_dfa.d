@@ -26,7 +26,9 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 		NFA.StateId[][] newBatchOfStartingPoints;
 		foreach(NFA.StateId[] searchFromNFAStateSet; startingPoints)
 		{
-			foreach(c; NFA.alphabet)
+			//for(char c; NFA.alphabet)
+			//for(char c=0; c<256; c++)
+			for(char c=96; c<99; c++)
 			{
 				NFA.StateId[] reachableStates = getReachableStatesForChar(nfa, searchFromNFAStateSet, c);
 				if(!reachableStates.empty)

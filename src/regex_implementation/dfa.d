@@ -52,11 +52,6 @@ class DFA(StateIdNFA)
 
 
 
-	//StateId getStateId(StateIdNFA[] nfaIds...)
-	//{
-	//	return getStateId(nfaIds);
-	//}
-	//StateId getStateId(StateIdNFA[] nfaIds)
 	StateId getStateId(StateIdNFA[] nfaIds...)
 	{
 		auto stateForTest = redBlackTree(nfaIds);

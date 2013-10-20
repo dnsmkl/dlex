@@ -97,4 +97,8 @@ unittest
 	assert( testUnfinishedSequence.matchExact("aaab"));
 	assert(!testUnfinishedSequence.matchExact("aaa"));
 	assert(!testUnfinishedSequence.matchExact("aaaba"));
+
+
+	auto testAlphabet = Regex("ab``");
+	assert( testAlphabet.matchExact("ab``"));
 }
