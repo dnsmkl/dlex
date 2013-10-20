@@ -126,22 +126,16 @@ class DFA(StateIdNFA)
 
 	bool checkWord(string text)
 	{
-		StateId currentState = start;
-		int i;// in case of blow-up
-		foreach(char c; text)
-		{
-			if( currentState !in transitions ) return false;
-			if( c !in transitions[currentState] ) return false;
-			currentState = transitions[currentState][c];
-		}
-		return isAcceptedEnd(currentState);
+		return countPartialMatch(text) == text.length;
 	}
 
 	size_t countPartialMatch(string text)
 	{
-		size_t lastAccpetedAt = 0;
+		size_t lastAccpetedAt = size_t.max; // mark for not found
 
 		StateId currentState = start;
+		if( isAcceptedEnd(currentState) ) lastAccpetedAt = 0;
+
 		foreach(size_t index, char c; text)
 		{
 			if( currentState !in transitions ) break;
@@ -158,7 +152,7 @@ class DFA(StateIdNFA)
 
 
 
-//version(none)
+version(none)
 unittest
 {
 	import std.stdio;
