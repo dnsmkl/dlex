@@ -68,21 +68,6 @@ NFA.StateId[] getReachableStatesForChar(NFA nfa, NFA.StateId[] stateIds, NFA.Alp
 }
 
 
-NFA.StateId[] dfaIdToNFAStates(DFA!(NFA.StateId) dfa, DFA!(NFA.StateId).StateId stateId)
-{
-	return dfaStateToNFAStates(dfa.getState(stateId));
-}
-
-
-NFA.StateId[] dfaStateToNFAStates(DFA!(NFA.StateId).State dfaState)
-{
-	NFA.StateId[] r;
-	foreach(el; dfaState)
-	{
-		r ~= el;
-	}
-	return r;
-}
 
 
 version(none)
