@@ -136,11 +136,29 @@ class DFA(StateIdNFA)
 		}
 		return isAcceptedEnd(currentState);
 	}
+
+	size_t countPartialMatch(string text)
+	{
+		size_t lastAccpetedAt = 0;
+
+		StateId currentState = start;
+		foreach(size_t index, char c; text)
+		{
+			if( currentState !in transitions ) break;
+			if( c !in transitions[currentState] ) break;
+			currentState = transitions[currentState][c];
+
+			// Mark possible success, but continue to find longest match
+			if( isAcceptedEnd(currentState) ) lastAccpetedAt = index+1; // 1-based
+		}
+		return lastAccpetedAt;
+
+	}
 }
 
 
 
-version(none)
+//version(none)
 unittest
 {
 	import std.stdio;
@@ -162,13 +180,27 @@ unittest
 	writeln(" DFA DFA ");
 	writeln(dfa);
 
-	//testWord("a");
-	//testWord("b");
-	//testWord("ab");
-	//testWord("aba");
-	//testWord("abab");
-	//testWord("ababa");
-	//testWord("ababab");
+	testWord("a");
+	testWord("b");
+	testWord("ab");
+	testWord("aba");
+	testWord("abab");
+	testWord("ababa");
+	testWord("ababab");
+
+
+	void testPartialMatch(string word){
+		writeln("\n\ndfa.countPartialMatch(\"" ~ word ~ "\")");
+		writeln(dfa.countPartialMatch(word));
+	}
+
+	testPartialMatch("a");
+	testPartialMatch("b");
+	testPartialMatch("ab");
+	testPartialMatch("aba");
+	testPartialMatch("abab");
+	testPartialMatch("ababa");
+	testPartialMatch("ababab");
 }
 
 
