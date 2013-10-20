@@ -8,9 +8,6 @@ import std.array;
 struct NFA
 {
 	alias char AlphaElement;
-	immutable AlphaElement[] alphabet
-//		= ['a','b'];
-		= ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','|'];
 	alias size_t StateId;
 	StateId[] states;
 	StateId[] starts;

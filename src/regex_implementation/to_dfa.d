@@ -26,9 +26,8 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 		NFA.StateId[][] newBatchOfStartingPoints;
 		foreach(NFA.StateId[] searchFromNFAStateSet; startingPoints)
 		{
-			//for(char c; NFA.alphabet)
-			//for(char c=0; c<256; c++)
-			for(char c=96; c<99; c++)
+			// loop through all possible bytes
+			for(char c=0; ; ++c) // exit condition moved to the end
 			{
 				NFA.StateId[] reachableStates = getReachableStatesForChar(nfa, searchFromNFAStateSet, c);
 				if(!reachableStates.empty)
@@ -42,23 +41,14 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 					if(containsEnd(nfa.ends,reachableStates)) dfa.ends ~= dfa.getStateId(reachableStates);
 					dfa.addTransitionFromNFA(searchFromNFAStateSet, c, reachableStates);
 				}
+
+				if(c==char.max) break;
 			}
 		}
 		startingPoints = newBatchOfStartingPoints;
 	}
 
 	return dfa;
-}
-
-
-NFA.StateId[] getReachableStatesForAlphabet(NFA nfa, NFA.StateId[] states)
-{
-	NFA.StateId[] r;
-	foreach(letter; NFA.alphabet)
-	{
-		r ~= getReachableStatesForChar(nfa, states, letter);
-	}
-	return r;
 }
 
 
