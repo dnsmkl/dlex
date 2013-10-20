@@ -44,6 +44,12 @@ RegexAST recursiveParse(string regexText, ref size_t currentChar)
 				resultAccumulator[lastIx] = new ast.Repeat(resultAccumulator[lastIx]); // transform into repeat
 			break;
 
+			/* optional */
+			case '?':
+				auto lastIx = resultAccumulator.length-1;
+				resultAccumulator[lastIx] = new ast.Optional(resultAccumulator[lastIx]);
+			break;
+
 			/* alteration */
 			case '|':
 				// without ".dup" it goes into infinite recursion with ast.Sequence.toString
@@ -94,4 +100,6 @@ unittest
 	assertParsedAST("a|ba"  , "Or{L(a)|Seq[L(b),L(a)]}");
 	assertParsedAST("aa|b"  , "Or{Seq[L(a),L(a)]|L(b)}");
 	assertParsedAST("(aa)|b", "Or{Seq[L(a),L(a)]|L(b)}");
+	assertParsedAST("a?"    , "Opt(L(a))");
+	assertParsedAST("(ab)?" , "Opt(Seq[L(a),L(b)])");
 }

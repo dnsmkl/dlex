@@ -80,6 +80,12 @@ unittest
 	assert(!testOrWithoutParanthesis.matchExact("baba"));
 	assert(!testOrWithoutParanthesis.matchExact("abab"));
 
+	auto testOptional = Regex("a?");
+	assert( testOptional.matchExact("a"));
+	assert( testOptional.matchExact(""));
+	assert(!testOptional.matchExact("b"));
+	assert(!testOptional.matchExact("aa"));
+
 	auto testMix = Regex("((ab*)|b)*aaa");
 	assert(!testMix.matchExact(""));
 	assert( testMix.matchExact("aaa"));
