@@ -20,6 +20,7 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 
 	if(containsEnd(nfa.ends,nfa.starts)) dfa.ends ~= dfa.start;
 
+	// 'starting' as in 'Single transition is from start to finish'
 	NFA.StateId[][] startingPoints = [nfa.starts];
 	while(!empty(startingPoints))
 	{
@@ -32,7 +33,7 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 				NFA.StateId[] reachableStates = getReachableStatesForChar(nfa, searchFromNFAStateSet, c);
 				if(!reachableStates.empty)
 				{
-					if(!dfa.isAlreadyObservedStateFromNFA(reachableStates))
+					if(dfa.isDFAStateNewFromNFA(reachableStates))
 					{
 						newBatchOfStartingPoints ~= reachableStates;
 					}

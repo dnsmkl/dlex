@@ -28,10 +28,10 @@ class DFA(StateIdNFA)
 
 
 
-	bool isAlreadyObservedStateFromNFA(StateIdNFA[] nfaStates)
+	bool isDFAStateNewFromNFA(StateIdNFA[] nfaStates)
 	{
 		State potentialyNewState = makeState(nfaStates);
-		return exists!State(this.states, potentialyNewState);
+		return !exists!State(this.states, potentialyNewState);
 	}
 
 
