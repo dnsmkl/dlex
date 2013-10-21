@@ -51,6 +51,12 @@ class DFA(StateIdNFA)
 	}
 
 
+	public
+	void markEnd(StateIdNFA[] reachableStates)
+	{
+		this.ends ~= getStateId(reachableStates);
+	}
+
 
 	StateId getStateId(StateIdNFA[] nfaIds...)
 	{
@@ -157,7 +163,7 @@ unittest
 	dfa.addTransitionFromNFA([2], 'a', [1]); // Loop back
 
 	dfa.start = dfa.getStateId(0);
-	dfa.ends = [dfa.getStateId(2)];
+	dfa.markEnd([2]);
 
 	assert(!dfa.fullMatch(""));
 	assert(!dfa.fullMatch("a"));
@@ -178,9 +184,23 @@ unittest
 	assert( dfa.countPartialMatch("ababab") == 6);
 
 	// test acceptability of empty string
-	dfa.ends = [dfa.getStateId(2),dfa.getStateId(0)];
+	dfa.markEnd([0]);
 	assert( dfa.fullMatch(""));
+	assert(!dfa.fullMatch("a"));
+	assert(!dfa.fullMatch("b"));
+	assert( dfa.fullMatch("ab"));
+	assert(!dfa.fullMatch("aba"));
+	assert( dfa.fullMatch("abab"));
+	assert(!dfa.fullMatch("ababa"));
+	assert( dfa.fullMatch("ababab"));
 	assert( dfa.countPartialMatch("") == 0);
+	assert( dfa.countPartialMatch("a") == 0);
+	assert( dfa.countPartialMatch("b") == 0);
+	assert( dfa.countPartialMatch("ab") == 2);
+	assert( dfa.countPartialMatch("aba") == 2);
+	assert( dfa.countPartialMatch("abab") == 4);
+	assert( dfa.countPartialMatch("ababa") == 4);
+	assert( dfa.countPartialMatch("ababab") == 6);
 }
 
 

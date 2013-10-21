@@ -18,7 +18,7 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 
 	dfa.start = dfa.getStateId(nfa.starts);
 
-	if(containsEnd(nfa.ends,nfa.starts)) dfa.ends ~= dfa.start;
+	if(containsEnd(nfa.ends,nfa.starts)) dfa.markEnd(nfa.starts);
 
 	// 'starting' as in 'Single transition is from start to finish'
 	NFA.StateId[][] startingPoints = [nfa.starts];
@@ -39,7 +39,7 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 					}
 					auto newDFAState = DFA!(NFA.StateId).makeState(reachableStates);
 					dfa.states ~= DFA!(NFA.StateId).makeState(reachableStates);
-					if(containsEnd(nfa.ends,reachableStates)) dfa.ends ~= dfa.getStateId(reachableStates);
+					if(containsEnd(nfa.ends,reachableStates)) dfa.markEnd(reachableStates);
 					dfa.addTransitionFromNFA(searchFromNFAStateSet, c, reachableStates);
 				}
 
