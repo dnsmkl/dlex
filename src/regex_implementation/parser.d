@@ -38,10 +38,17 @@ RegexAST recursiveParse(string regexText, ref size_t currentChar)
 				return makeSeqOnlyIfNeeded(resultAccumulator);
 			break;
 
-			/* repeat */
+			/* repeat 0 or more times */
 			case '*':
 				auto lastIx = resultAccumulator.length-1;
 				resultAccumulator[lastIx] = new ast.Repeat(resultAccumulator[lastIx]); // transform into repeat
+			break;
+
+			/* repeat 1 or more times */
+			case '+':
+				auto lastIx = resultAccumulator.length-1;
+				auto last = resultAccumulator[lastIx];
+				resultAccumulator[lastIx] = new ast.Sequence(last, new ast.Repeat(last));
 			break;
 
 			/* optional */
@@ -102,4 +109,5 @@ unittest
 	assertParsedAST("(aa)|b", "Or{Seq[L(a),L(a)]|L(b)}");
 	assertParsedAST("a?"    , "Opt(L(a))");
 	assertParsedAST("(ab)?" , "Opt(Seq[L(a),L(b)])");
+	assertParsedAST("a+"    , "Seq[L(a),Rep(L(a))]");
 }

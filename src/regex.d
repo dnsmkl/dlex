@@ -54,15 +54,25 @@ unittest
 	assert(!testSequence.matchExact("aaa"));
 	assert(!testSequence.matchExact("aaaba"));
 
-	auto testRepeat = Regex("(ab)*");
-	assert( testRepeat.matchExact(""));
-	assert(!testRepeat.matchExact("a"));
-	assert( testRepeat.matchExact("ab"));
-	assert(!testRepeat.matchExact("aba"));
-	assert( testRepeat.matchExact("abab"));
-	assert(!testRepeat.matchExact("ababa"));
-	assert( testRepeat.matchExact("ababab"));
-	assert(!testRepeat.matchExact("abababa"));
+	auto testRepeatStar = Regex("(ab)*");
+	assert( testRepeatStar.matchExact(""));
+	assert(!testRepeatStar.matchExact("a"));
+	assert( testRepeatStar.matchExact("ab"));
+	assert(!testRepeatStar.matchExact("aba"));
+	assert( testRepeatStar.matchExact("abab"));
+	assert(!testRepeatStar.matchExact("ababa"));
+	assert( testRepeatStar.matchExact("ababab"));
+	assert(!testRepeatStar.matchExact("abababa"));
+
+	auto testRepeatPlus = Regex("(ab)+");
+	assert(!testRepeatPlus.matchExact(""));
+	assert(!testRepeatPlus.matchExact("a"));
+	assert( testRepeatPlus.matchExact("ab"));
+	assert(!testRepeatPlus.matchExact("aba"));
+	assert( testRepeatPlus.matchExact("abab"));
+	assert(!testRepeatPlus.matchExact("ababa"));
+	assert( testRepeatPlus.matchExact("ababab"));
+	assert(!testRepeatPlus.matchExact("abababa"));
 
 	auto testOrWithParanthesis = Regex("(ab)|(ba)");
 	assert( testOrWithParanthesis.matchExact("ba"));

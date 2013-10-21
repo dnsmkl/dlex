@@ -18,6 +18,12 @@ class Sequence:RegexAST
 		this.sequenceOfRegexASTs = sequenceOfRegexASTs;
 	}
 
+	this(RegexAST regexAST1, RegexAST regexAST2)
+	{
+		this.sequenceOfRegexASTs ~= regexAST1;
+		this.sequenceOfRegexASTs ~= regexAST2;
+	}
+
 	void add(RegexAST regexAST)
 	{
 		this.sequenceOfRegexASTs ~= regexAST;
