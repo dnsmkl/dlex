@@ -25,7 +25,7 @@ struct Regex
 
 	bool matchExact(string text)
 	{
-		return dfa.fullMatch(text);
+		return cast(bool) dfa.fullMatch(text);
 	}
 
 	string dumpDFA()

@@ -17,7 +17,9 @@ class DFA(StateIdNFA)
 
 	State[] states;
 	StateId start;
-	StateId[] ends;
+
+	struct TaggedEnd{ StateId stateId; string tag; }
+	TaggedEnd[] ends;
 	StateId[AlphaElement][StateId] transitions;
 
 
@@ -54,7 +56,13 @@ class DFA(StateIdNFA)
 	public
 	void markEnd(StateIdNFA[] reachableStates)
 	{
-		this.ends ~= getStateId(reachableStates);
+		this.ends ~= TaggedEnd(getStateId(reachableStates),"");
+	}
+
+	public
+	void markEndTagged(StateIdNFA[] reachableStates, string tag)
+	{
+		this.ends ~= TaggedEnd(getStateId(reachableStates), tag);
 	}
 
 
@@ -105,7 +113,7 @@ class DFA(StateIdNFA)
 		}
 
 		r ~= "\nEnds:";
-		foreach(StateId s; ends) r ~= "\n  " ~ stateIdToString(s);
+		foreach(TaggedEnd s; this.ends) r ~= "\n  " ~ stateIdToString(s.stateId);
 
 		r ~= ("\n-- ============ --");
 		return r;
@@ -114,9 +122,9 @@ class DFA(StateIdNFA)
 
 	bool isAcceptedEnd(StateId stateId)
 	{
-		foreach(s;ends)
+		foreach(TaggedEnd s; this.ends)
 		{
-			if(s == stateId)
+			if(s.stateId == stateId)
 			{
 				return true;
 			}
@@ -124,18 +132,60 @@ class DFA(StateIdNFA)
 		return false;
 	}
 
-
-	bool fullMatch(string text)
+	string getEndTag(StateId stateId)
 	{
-		return countPartialMatch(text) == text.length;
+		foreach(TaggedEnd s; this.ends)
+		{
+			if(s.stateId == stateId)
+			{
+				return s.tag;
+			}
+		}
+		assert(0);
 	}
 
-	size_t countPartialMatch(string text)
+
+	struct Match
+	{
+		bool match;
+		size_t count;
+		string tag;
+
+		bool opCast(T : bool)()
+		{
+			return match;
+		}
+
+		bool opEquals(size_t s)
+		{
+			return count == s;
+		}
+
+		bool opEquals(string s)
+		{
+			return match && tag == s;
+		}
+	}
+
+	Match fullMatch(string text)
+	{
+		auto match = countPartialMatch(text);
+		if(match.count == text.length) return match;
+		else return Match(false,0,"");
+	}
+
+	Match countPartialMatch(string text)
 	{
 		size_t lastAccpetedAt = size_t.max; // mark for not found
+		auto match = Match(false, size_t.max, "");
 
 		StateId currentState = start;
-		if( isAcceptedEnd(currentState) ) lastAccpetedAt = 0;
+		if( isAcceptedEnd(currentState) )
+		{
+			match.count = 0;
+			match.match = true;
+			match.tag = getEndTag(currentState);
+		}
 
 		foreach(size_t index, char c; text)
 		{
@@ -144,9 +194,14 @@ class DFA(StateIdNFA)
 			currentState = transitions[currentState][c];
 
 			// Mark possible success, but continue to find longest match
-			if( isAcceptedEnd(currentState) ) lastAccpetedAt = index+1; // 1-based
+			if( isAcceptedEnd(currentState) )
+			{
+				match.count = index+1; // convert to 1-based
+				match.match = true;
+				match.tag = getEndTag(currentState);
+			}
 		}
-		return lastAccpetedAt;
+		return match;
 
 	}
 }
@@ -184,15 +239,16 @@ unittest
 	assert( dfa.countPartialMatch("ababab") == 6);
 
 	// test acceptability of empty string
-	dfa.markEnd([0]);
+	dfa.markEndTagged([0],"Tag");
 	assert( dfa.fullMatch(""));
 	assert(!dfa.fullMatch("a"));
 	assert(!dfa.fullMatch("b"));
-	assert( dfa.fullMatch("ab"));
 	assert(!dfa.fullMatch("aba"));
 	assert( dfa.fullMatch("abab"));
 	assert(!dfa.fullMatch("ababa"));
 	assert( dfa.fullMatch("ababab"));
+
+
 	assert( dfa.countPartialMatch("") == 0);
 	assert( dfa.countPartialMatch("a") == 0);
 	assert( dfa.countPartialMatch("b") == 0);
@@ -201,6 +257,15 @@ unittest
 	assert( dfa.countPartialMatch("abab") == 4);
 	assert( dfa.countPartialMatch("ababa") == 4);
 	assert( dfa.countPartialMatch("ababab") == 6);
+
+	// test string tags
+	assert( dfa.fullMatch("")  == "Tag");
+	assert( dfa.fullMatch("a") != "Tag"); // when no match, then no string will match the tag
+	assert( dfa.fullMatch("b") != "");    // when no match, then no string will match the tag
+	assert( dfa.fullMatch("aba") != "");
+	assert( dfa.fullMatch("abab")  == ""); // when end had no tag, default value is empty string
+	assert( dfa.fullMatch("ababa") != "");
+	assert( dfa.fullMatch("ababab")  == ""); // when end had no tag, default value is empty string
 }
 
 
