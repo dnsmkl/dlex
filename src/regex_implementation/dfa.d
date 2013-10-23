@@ -5,7 +5,7 @@ import std.array;
 
 
 /* Deterministic finate automaton - transformed from NFA */
-class DFA(StateIdNFA)
+class DFA(StateIdNFA, Tag = string)
 {
 	import std.container;
 
@@ -18,7 +18,7 @@ class DFA(StateIdNFA)
 	State[] states;
 	StateId start;
 
-	struct TaggedEnd{ StateId stateId; string tag; }
+	struct TaggedEnd{ StateId stateId; Tag tag; }
 	TaggedEnd[] ends;
 	StateId[AlphaElement][StateId] transitions;
 
@@ -56,11 +56,11 @@ class DFA(StateIdNFA)
 	public
 	void markEnd(StateIdNFA[] reachableStates)
 	{
-		this.ends ~= TaggedEnd(getStateId(reachableStates),"");
+		this.ends ~= TaggedEnd(getStateId(reachableStates),Tag.init);
 	}
 
 	public
-	void markEndTagged(StateIdNFA[] reachableStates, string tag)
+	void markEndTagged(StateIdNFA[] reachableStates, Tag tag)
 	{
 		this.ends ~= TaggedEnd(getStateId(reachableStates), tag);
 	}
@@ -132,7 +132,7 @@ class DFA(StateIdNFA)
 		return false;
 	}
 
-	string getEndTag(StateId stateId)
+	Tag getEndTag(StateId stateId)
 	{
 		foreach(TaggedEnd s; this.ends)
 		{
@@ -149,7 +149,7 @@ class DFA(StateIdNFA)
 	{
 		bool match;
 		size_t count;
-		string tag;
+		Tag tag;
 
 		bool opCast(T : bool)()
 		{
@@ -160,24 +160,19 @@ class DFA(StateIdNFA)
 		{
 			return count == s;
 		}
-
-		bool opEquals(string s)
-		{
-			return match && tag == s;
-		}
 	}
 
 	Match fullMatch(string text)
 	{
 		auto match = countPartialMatch(text);
 		if(match.count == text.length) return match;
-		else return Match(false,0,"");
+		else return Match(false,0,Tag.init);
 	}
 
 	Match countPartialMatch(string text)
 	{
 		size_t lastAccpetedAt = size_t.max; // mark for not found
-		auto match = Match(false, size_t.max, "");
+		auto match = Match(false, size_t.max, Tag.init);
 
 		StateId currentState = start;
 		if( isAcceptedEnd(currentState) )
@@ -211,7 +206,7 @@ class DFA(StateIdNFA)
 
 unittest
 {
-	auto dfa = new DFA!(int)();
+	auto dfa = new DFA!(int,int)();
 
 	dfa.addTransitionFromNFA([0], 'a', [1]);
 	dfa.addTransitionFromNFA([1], 'b', [2]); // Already acceptable end
@@ -239,7 +234,7 @@ unittest
 	assert( dfa.countPartialMatch("ababab") == 6);
 
 	// test acceptability of empty string
-	dfa.markEndTagged([0],"Tag");
+	dfa.markEndTagged([0], 1);
 	assert( dfa.fullMatch(""));
 	assert(!dfa.fullMatch("a"));
 	assert(!dfa.fullMatch("b"));
@@ -259,13 +254,13 @@ unittest
 	assert( dfa.countPartialMatch("ababab") == 6);
 
 	// test string tags
-	assert( dfa.fullMatch("")  == "Tag");
-	assert( dfa.fullMatch("a") != "Tag"); // when no match, then no string will match the tag
-	assert( dfa.fullMatch("b") != "");    // when no match, then no string will match the tag
-	assert( dfa.fullMatch("aba") != "");
-	assert( dfa.fullMatch("abab")  == ""); // when end had no tag, default value is empty string
-	assert( dfa.fullMatch("ababa") != "");
-	assert( dfa.fullMatch("ababab")  == ""); // when end had no tag, default value is empty string
+	assert( dfa.fullMatch("").tag  == 1);
+	assert( dfa.fullMatch("a").tag != 1);
+	assert( dfa.fullMatch("b").tag == 0);
+	assert( dfa.fullMatch("aba").tag == 0);
+	assert( dfa.fullMatch("abab").tag  == 0);
+	assert( dfa.fullMatch("ababa").tag == 0);
+	assert( dfa.fullMatch("ababab").tag  == 0);
 }
 
 
