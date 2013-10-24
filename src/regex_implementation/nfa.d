@@ -11,10 +11,12 @@ struct NFA
 	alias size_t StateId;
 	StateId[] states;
 	StateId[] starts;
-	StateId[] ends;
+	alias string Tag;
 
 	StateId[][AlphaElement][StateId] transitions;
-
+	struct TaggedEnd{ StateId stateId; Tag tag; }
+	//StateId[] ends;
+	TaggedEnd[] ends;
 
 
 	StateId _state_used_recently_as_transition_target; // for conveniently building the NFA
@@ -55,7 +57,7 @@ struct NFA
 	void makeRepeat()
 	{
 		/* Make ends point to targets of starts */
-		foreach(StateId end; ends)
+		foreach(end; ends)
 		{
 			foreach(StateId start; starts)
 			{
@@ -63,7 +65,7 @@ struct NFA
 				{
 					foreach(target; targets)
 					{
-						addTransitionToExisting(end, letter, target);
+						addTransitionToExisting(end.stateId, letter, target);
 					}
 				}
 			}
@@ -83,7 +85,7 @@ struct NFA
 		}
 
 		// all transitions, that pointed to [this.ends] should connect to [other.starts] targets
-		foreach(thisEndStateId; this.ends)
+		foreach(end; this.ends)
 		{
 			foreach(otherStartStateId ; other.starts)
 			{
@@ -91,17 +93,19 @@ struct NFA
 				{
 					foreach(otherTargetStateId; otherTargets)
 					{
-						addTransitionToExisting(thisEndStateId, otherletter, otherTargetStateId+incrementNeeded);
+						addTransitionToExisting(end.stateId, otherletter, otherTargetStateId+incrementNeeded);
 					}
 				}
 			}
 		}
 
-		// redo ends - [this.ends] = [other.ends+incrementNeeded]
+		// redo ends : [this.ends] = [other.ends+incrementNeeded]
 		this.ends = [];
 		foreach(otherEnd; other.ends)
 		{
-			this.ends ~= otherEnd+incrementNeeded;
+			TaggedEnd tmp = otherEnd;
+			tmp.stateId += incrementNeeded;
+			this.ends ~= tmp;
 		}
 
 
@@ -153,7 +157,9 @@ struct NFA
 		// append ends : [this.ends] =  [this.ends] ~ [other.ends+incrementNeeded]
 		foreach(otherEnd; other.ends)
 		{
-			this.ends ~= otherEnd+incrementNeeded;
+			TaggedEnd tmp = otherEnd;
+			tmp.stateId += incrementNeeded;
+			this.ends ~= tmp;
 		}
 
 
@@ -199,9 +205,10 @@ struct NFA
 	{
 		markAsEnd(_state_used_recently_as_transition_target);
 	}
-	void markAsEnd(StateId s)
+	void markAsEnd(StateId s, Tag tag = "")
 	{
-		ends ~= s;
+		auto newEnd = TaggedEnd(s, tag);
+		ends ~= newEnd;
 	}
 
 

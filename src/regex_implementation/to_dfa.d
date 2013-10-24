@@ -18,7 +18,7 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 
 	dfa.start = dfa.getStateId(nfa.starts);
 
-	if(containsEnd(nfa.ends,nfa.starts)) dfa.markEnd(nfa.starts);
+	transferEndsIfNeeded(nfa.starts, nfa.ends, dfa);
 
 	// 'starting' as in 'Single transition is from start to finish'
 	NFA.StateId[][] startingPoints = [nfa.starts];
@@ -39,7 +39,7 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 					}
 					auto newDFAState = DFA!(NFA.StateId).makeState(reachableStates);
 					dfa.states ~= DFA!(NFA.StateId).makeState(reachableStates);
-					if(containsEnd(nfa.ends,reachableStates)) dfa.markEnd(reachableStates);
+					transferEndsIfNeeded(reachableStates, nfa.ends, dfa);
 					dfa.addTransitionFromNFA(searchFromNFAStateSet, c, reachableStates);
 				}
 
@@ -50,6 +50,15 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 	}
 
 	return dfa;
+}
+
+void transferEndsIfNeeded(NFA.StateId[] reachableStates, NFA.TaggedEnd[] nfaEnds, ref DFA!(NFA.StateId) dfa )
+{
+	if(containsEnd(nfaEnds, reachableStates))
+	{
+		auto end = whichEnd(nfaEnds, reachableStates);
+		dfa.markEndTagged(reachableStates, end.tag);
+	}
 }
 
 
@@ -71,6 +80,41 @@ NFA.StateId[] getReachableStatesForChar(NFA nfa, NFA.StateId[] stateIds, NFA.Alp
 
 
 
+bool isEnd(T, U)(T[] endStates, U stateId)
+{
+	foreach(endState; endStates)
+	{
+		if(endState.stateId == stateId) return true;
+	}
+	return false;
+}
+
+bool containsEnd(T, U)(T[] endStates, U[] stateIds)
+{
+	foreach(stateId; stateIds)
+	{
+		if( isEnd(endStates, stateId) ) return true;
+	}
+	return false;
+}
+
+
+
+T whichEnd(T, U)(T[] endStates, U[] stateIds)
+{
+	foreach(stateId; stateIds)
+	{
+		foreach(endState; endStates)
+		{
+			if(endState.stateId == stateId) return endState;
+		}
+	}
+	assert(0, "End not found - call containsEnd() first");
+}
+
+
+
+
 version(none)
 unittest
 {
@@ -79,23 +123,4 @@ unittest
 	writeln( "-- ------------- --" );
 	writeln(toDfa(nfa));
 	writeln( "-- ------------- --" );
-}
-
-
-bool isEnd(T)(T[] endStateIds, T stateId)
-{
-	foreach(endStateId; endStateIds)
-	{
-		if(endStateId==stateId) return true;
-	}
-	return false;
-}
-
-bool containsEnd(T)(T[] endStateIds, T[] stateIds)
-{
-	foreach(stateId; stateIds)
-	{
-		if( isEnd(endStateIds, stateId) ) return true;
-	}
-	return false;
 }

@@ -5,6 +5,8 @@ import regex_implementation.ast;
 import regex_implementation.nfa;
 alias regex_implementation.ast ast;
 alias regex_implementation.nfa nfa;
+
+
 /* dispatcher for interace */
 NFA getNFA(ast.RegexAST rast)
 {
