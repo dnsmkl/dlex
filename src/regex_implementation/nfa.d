@@ -32,7 +32,7 @@ struct NFA
 	}
 
 
-	this(AlphaElement[] alphaSequence...)
+	this(AlphaElement[] alphaSequence)
 	{
 		makeNewStartState();
 		foreach(alpha; alphaSequence)

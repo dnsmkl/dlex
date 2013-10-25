@@ -25,7 +25,7 @@ NFA getNFA(ast.RegexAST rast)
 
 NFA getNFA(ast.Letter rast)
 {
-	return NFA(rast.letter);
+	return NFA([rast.letter]);
 }
 
 NFA getNFA(ast.Sequence rasts)

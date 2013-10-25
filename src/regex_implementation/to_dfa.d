@@ -118,10 +118,10 @@ T whichEnd(T, U)(T[] endStates, U[] stateIds)
 
 unittest
 {
-	auto nfaSeq1 = NFA('a','b');
+	auto nfaSeq1 = NFA(['a','b']);
 	nfaSeq1.makeRepeat();
 	nfaSeq1.makeOptional();       // (ab)*
-	nfaSeq1.append(NFA('a','b')); // (ab)*(ab)
+	nfaSeq1.append(NFA(['a','b'])); // (ab)*(ab)
 
 	auto dfa = toDfa(nfaSeq1);
 	assert(!dfa.fullMatch(""));
