@@ -118,7 +118,7 @@ T whichEnd(T, U)(T[] endStates, U[] stateIds)
 
 unittest
 {
-	auto nfaSeq1 = NFA(['a','b']);
+	auto nfaSeq1 = NFA(['a','b'], "TagNFA");
 	nfaSeq1.makeRepeat();
 	nfaSeq1.makeOptional();       // (ab)*
 	nfaSeq1.append(NFA(['a','b'])); // (ab)*(ab)
@@ -129,4 +129,10 @@ unittest
 	assert( dfa.fullMatch("ab"));
 	assert(!dfa.fullMatch("aba"));
 	assert( dfa.fullMatch("abab"));
+
+	assert( dfa.fullMatch("").tag == "");
+	assert( dfa.fullMatch("a").tag == "");
+	assert( dfa.fullMatch("ab").tag == "TagNFA");
+	assert( dfa.fullMatch("aba").tag == "");
+	assert( dfa.fullMatch("abab").tag == "TagNFA");
 }

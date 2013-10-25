@@ -18,23 +18,26 @@ struct NFA
 	//StateId[] ends;
 	TaggedEnd[] ends;
 
+	Tag endTag;
 
 	StateId _state_used_recently_as_transition_target; // for conveniently building the NFA
 
 
 	public static
-	NFA createNFA() // D does not allow default constructor for structs ( i.e. this() )
+	NFA createNFA(Tag endTag = Tag.init) // D does not allow default constructor for structs ( i.e. this() )
 	{
 		auto r=NFA();
+		r.endTag = endTag;
 		r.makeNewStartState();
 		r.markAsEnd();
 		return r;
 	}
 
 
-	this(AlphaElement[] alphaSequence)
+	this(AlphaElement[] alphaSequence, Tag endTag = Tag.init)
 	{
 		makeNewStartState();
+		this.endTag = endTag;
 		foreach(alpha; alphaSequence)
 		{
 			addTransitionToNew(alpha);
@@ -52,7 +55,6 @@ struct NFA
 			markAsEnd(start);
 		}
 	}
-
 
 	void makeRepeat()
 	{
@@ -103,8 +105,10 @@ struct NFA
 		this.ends = [];
 		foreach(otherEnd; other.ends)
 		{
+
 			TaggedEnd tmp = otherEnd;
 			tmp.stateId += incrementNeeded;
+			tmp.tag = endTag; // when appending. Reuse `this.endTag`
 			this.ends ~= tmp;
 		}
 
@@ -205,9 +209,9 @@ struct NFA
 	{
 		markAsEnd(_state_used_recently_as_transition_target);
 	}
-	void markAsEnd(StateId s, Tag tag = "")
+	void markAsEnd(StateId s)
 	{
-		auto newEnd = TaggedEnd(s, tag);
+		auto newEnd = TaggedEnd(s, this.endTag);
 		ends ~= newEnd;
 	}
 
@@ -296,28 +300,19 @@ struct NFA
 		return r[0 .. r.length-1];
 	}
 }
+
+
 version(none)
 unittest
 {
-	auto nfaSeq1 = NFA('a','b');
+	auto nfaSeq1 = NFA(['a','b'], "TagEnd");
 	nfaSeq1.makeRepeat();
 	nfaSeq1.makeOptional(); 	// (ab)*
 
-	auto nfaSeq2 = NFA('a','b');// (ab)
+	auto nfaSeq2 = NFA(['a','b'], "TagEnd2");// (ab)
 
 	nfaSeq1.append(nfaSeq2); 	// (ab)*(ab)
 
-
-
-	auto nfaUnion = NFA('a','c');
-	nfaUnion.addUnion(NFA('b'));
-
-
-	auto nfaUnion2 = NFA('a','b');
-	nfaUnion2.makeRepeat();
-	nfaUnion2.makeOptional();
-
-	nfaUnion2.addUnion(nfaSeq2);
 
 	import std.stdio;
 	writeln( "\n" );
@@ -326,7 +321,7 @@ unittest
 	writeln( "\n" );
 
 
-	writeln( nfaUnion2 );
+	writeln( nfaSeq1 );
 
 	writeln( "\n" );
 	writeln( "-- NFA - unittest --" );
