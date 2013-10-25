@@ -115,12 +115,18 @@ T whichEnd(T, U)(T[] endStates, U[] stateIds)
 
 
 
-version(none)
+
 unittest
 {
-	import std.stdio;
-	auto nfa = NFA('a','b');
-	writeln( "-- ------------- --" );
-	writeln(toDfa(nfa));
-	writeln( "-- ------------- --" );
+	auto nfaSeq1 = NFA('a','b');
+	nfaSeq1.makeRepeat();
+	nfaSeq1.makeOptional(); 	// (ab)*
+	nfaSeq1.append(NFA('a','b')); 	// (ab)*(ab)
+
+	auto dfa = toDfa(nfaSeq1);
+	assert(!dfa.fullMatch(""));
+	assert(!dfa.fullMatch("a"));
+	assert( dfa.fullMatch("ab"));
+	assert(!dfa.fullMatch("aba"));
+	assert( dfa.fullMatch("abab"));
 }
