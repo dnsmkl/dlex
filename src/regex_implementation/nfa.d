@@ -242,6 +242,7 @@ struct NFA
 	}
 
 
+	private
 	void addTransitionToExisting(StateId fromState, AlphaElement alpha, StateId toState)
 	{
 		if( !(fromState in transitions) )
