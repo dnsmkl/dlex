@@ -23,7 +23,7 @@ struct NFA
 
 
 	public static
-	NFA createNFA()
+	NFA createNFA() // D does not allow default constructor for structs ( i.e. this() )
 	{
 		auto r=NFA();
 		r.makeNewStartState();
