@@ -118,21 +118,29 @@ T whichEnd(T, U)(T[] endStates, U[] stateIds)
 
 unittest
 {
-	auto nfaSeq1 = NFA(['a','b'], "TagNFA");
-	nfaSeq1.makeRepeat();
-	nfaSeq1.makeOptional();       // (ab)*
-	nfaSeq1.append(NFA(['a','b'])); // (ab)*(ab)
+	auto nfa = NFA(['a','b'], "TagSeq");
+	nfa.makeRepeat();
+	nfa.makeOptional();       // (ab)*
+	nfa.append(NFA(['a','b'])); // (ab)*(ab)
 
-	auto dfa = toDfa(nfaSeq1);
-	assert(!dfa.fullMatch(""));
-	assert(!dfa.fullMatch("a"));
-	assert( dfa.fullMatch("ab"));
-	assert(!dfa.fullMatch("aba"));
-	assert( dfa.fullMatch("abab"));
+	auto dfaSeq = toDfa(nfa);
+	assert(!dfaSeq.fullMatch(""));
+	assert(!dfaSeq.fullMatch("a"));
+	assert( dfaSeq.fullMatch("ab"));
+	assert(!dfaSeq.fullMatch("aba"));
+	assert( dfaSeq.fullMatch("abab"));
 
-	assert( dfa.fullMatch("").tag == "");
-	assert( dfa.fullMatch("a").tag == "");
-	assert( dfa.fullMatch("ab").tag == "TagNFA");
-	assert( dfa.fullMatch("aba").tag == "");
-	assert( dfa.fullMatch("abab").tag == "TagNFA");
+	assert( dfaSeq.fullMatch("").tag == "");
+	assert( dfaSeq.fullMatch("a").tag == "");
+	assert( dfaSeq.fullMatch("ab").tag == "TagSeq");
+	assert( dfaSeq.fullMatch("aba").tag == "");
+	assert( dfaSeq.fullMatch("abab").tag == "TagSeq");
+
+	nfa.addUnion(NFA(['b', 'b'], "TagUnion"));
+	auto dfaUnion = toDfa(nfa);
+
+	assert( dfaUnion.fullMatch("").tag == "");
+	assert( dfaUnion.fullMatch("ab").tag == "TagSeq");
+	assert( dfaUnion.fullMatch("bb").tag == "TagUnion");
+	assert( dfaUnion.fullMatch("abab").tag == "TagSeq");
 }
