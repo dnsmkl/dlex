@@ -5,6 +5,7 @@ import std.array;
 
 /* Nondeterministic finate automaton */
 /* PROPOSAL: it could be split up into NFA & NFALinearStream */
+/* PROPOSAL: extract NFABuilder */
 struct NFA
 {
 	alias char AlphaElement;
