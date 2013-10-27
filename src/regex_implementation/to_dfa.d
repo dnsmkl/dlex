@@ -143,4 +143,12 @@ unittest
 	assert( dfaUnion.fullMatch("ab").tag == "TagSeq");
 	assert( dfaUnion.fullMatch("bb").tag == "TagUnion");
 	assert( dfaUnion.fullMatch("abab").tag == "TagSeq");
+
+	nfa.addUnion(NFA(['b', 'b'], "TagOverlap")); // same NFA ('bb') unioned again with different tag
+	auto dfaTestSame = toDfa(nfa);
+
+	assert( dfaTestSame.fullMatch("").tag == "");
+	assert( dfaTestSame.fullMatch("ab").tag == "TagSeq");
+	assert( dfaTestSame.fullMatch("bb").tag == "TagUnion");
+	assert( dfaTestSame.fullMatch("abab").tag == "TagSeq");
 }
