@@ -1,5 +1,10 @@
 
 
+#lexer
+test-lexer:
+	rdmd -unittest --main --force src/lexer.d
+
+
 #regex
 test-regex:
 	rdmd -unittest --main --force src/regex.d

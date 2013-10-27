@@ -47,6 +47,13 @@ struct NFA
 	}
 
 
+	@property
+	bool empty()
+	{
+		return states.length == 0;
+	}
+
+
 	void setEndTag(Tag endTag)
 	{
 		foreach(ref end; this.ends)
