@@ -46,6 +46,14 @@ struct NFA
 	}
 
 
+	void setEndTag(Tag endTag)
+	{
+		foreach(ref end; this.ends)
+		{
+			end.tag = endTag;
+		}
+	}
+
 
 	void makeOptional()
 	{

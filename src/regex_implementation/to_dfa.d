@@ -151,4 +151,11 @@ unittest
 	assert( dfaTestSame.fullMatch("ab").tag == "TagSeq");
 	assert( dfaTestSame.fullMatch("bb").tag == "TagUnion");
 	assert( dfaTestSame.fullMatch("abab").tag == "TagSeq");
+
+	auto testSetEndTag = NFA(['a','b','a']);
+	testSetEndTag.setEndTag("testSetEndTag");
+	auto dfaTestSetEndTag = toDfa(testSetEndTag);
+
+	assert( dfaTestSetEndTag.fullMatch("aba"));
+	assert( dfaTestSetEndTag.fullMatch("aba").tag == "testSetEndTag");
 }
