@@ -164,12 +164,12 @@ class DFA(StateIdNFA, Tag = string)
 
 	Match fullMatch(string text)
 	{
-		auto match = countPartialMatch(text);
+		auto match = partialMatch(text);
 		if(match.count == text.length) return match;
 		else return Match(false,0,Tag.init);
 	}
 
-	Match countPartialMatch(string text)
+	Match partialMatch(string text)
 	{
 		size_t lastAccpetedAt = size_t.max; // mark for not found
 		auto match = Match(false, size_t.max, Tag.init);
@@ -224,14 +224,14 @@ unittest
 	assert(!dfa.fullMatch("ababa"));
 	assert( dfa.fullMatch("ababab"));
 
-	assert( dfa.countPartialMatch("") == size_t.max);
-	assert( dfa.countPartialMatch("a") == size_t.max);
-	assert( dfa.countPartialMatch("b") == size_t.max);
-	assert( dfa.countPartialMatch("ab") == 2);
-	assert( dfa.countPartialMatch("aba") == 2);
-	assert( dfa.countPartialMatch("abab") == 4);
-	assert( dfa.countPartialMatch("ababa") == 4);
-	assert( dfa.countPartialMatch("ababab") == 6);
+	assert( dfa.partialMatch("") == size_t.max);
+	assert( dfa.partialMatch("a") == size_t.max);
+	assert( dfa.partialMatch("b") == size_t.max);
+	assert( dfa.partialMatch("ab") == 2);
+	assert( dfa.partialMatch("aba") == 2);
+	assert( dfa.partialMatch("abab") == 4);
+	assert( dfa.partialMatch("ababa") == 4);
+	assert( dfa.partialMatch("ababab") == 6);
 
 	// test acceptability of empty string
 	dfa.markEndTagged([0], 1);
@@ -244,14 +244,14 @@ unittest
 	assert( dfa.fullMatch("ababab"));
 
 
-	assert( dfa.countPartialMatch("") == 0);
-	assert( dfa.countPartialMatch("a") == 0);
-	assert( dfa.countPartialMatch("b") == 0);
-	assert( dfa.countPartialMatch("ab") == 2);
-	assert( dfa.countPartialMatch("aba") == 2);
-	assert( dfa.countPartialMatch("abab") == 4);
-	assert( dfa.countPartialMatch("ababa") == 4);
-	assert( dfa.countPartialMatch("ababab") == 6);
+	assert( dfa.partialMatch("") == 0);
+	assert( dfa.partialMatch("a") == 0);
+	assert( dfa.partialMatch("b") == 0);
+	assert( dfa.partialMatch("ab") == 2);
+	assert( dfa.partialMatch("aba") == 2);
+	assert( dfa.partialMatch("abab") == 4);
+	assert( dfa.partialMatch("ababa") == 4);
+	assert( dfa.partialMatch("ababab") == 6);
 
 	// test string tags
 	assert( dfa.fullMatch("").tag  == 1);
