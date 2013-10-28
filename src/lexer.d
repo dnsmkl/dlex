@@ -56,3 +56,20 @@ unittest
 	assert(l.getTag("bc") == "2nd");
 	assert(l.getTag("c") == "3rd");
 }
+
+unittest
+{
+	// Test if order of addition realy matters
+	auto l1 = Lexer();
+	l1.add("a", "1st");
+	l1.add("a+", "2nd");
+	assert(l1.getTag("a") == "1st");
+	assert(l1.getTag("aa") == "2nd");
+
+	auto l2 = Lexer();
+	// same regexes just switched order
+	l2.add("a+", "2nd");
+	l2.add("a", "1st");
+	assert(l2.getTag("a") == "2nd");
+	assert(l2.getTag("aa") == "2nd");
+}
