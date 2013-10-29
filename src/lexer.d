@@ -8,12 +8,20 @@ import regex_implementation.to_dfa;
 import regex_implementation.dfa;
 
 
+alias string Tag;
+
+struct Token
+{
+	bool match;
+	string tokenText;
+	Tag tokenTag;
+}
+
 
 struct Lexer
 {
 	alias regex_implementation.dfa.DFA!(regex_implementation.nfa.NFA.StateId) Dfa;
 	NFA nfa;
-	alias string Tag;
 
 
 
