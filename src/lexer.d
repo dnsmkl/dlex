@@ -44,11 +44,23 @@ struct Lexer
 	}
 
 
+	Token match(string text)
+	{
+		auto dfa = toDfa(this.nfa);
+		auto dfaMatch = dfa.partialMatch(text);
+
+		auto r = Token();
+		r.match = dfaMatch.match;
+		r.tokenTag = dfaMatch.tag;
+		r.tokenText = text[0 .. dfa.partialMatch(text).count];
+		return r;
+	}
+
 	Tag getTag(string text)
 	{
-		auto dfa = toDfa(nfa);
-		return dfa.partialMatch(text).tag;
+		return this.match(text).tokenTag;
 	}
+
 }
 
 
