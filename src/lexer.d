@@ -66,28 +66,16 @@ struct Lexer
 
 unittest
 {
-	auto l = Lexer();
-
-	l.add("a", "1st");
-	l.add("b", "2nd");
-	l.add("c", "3rd");
-
-	assert(l.getTag("abc") == "1st");
-	assert(l.getTag("bc") == "2nd");
-	assert(l.getTag("c") == "3rd");
-}
-
-unittest
-{
-	// Test if order of addition realy matters
+	// check if first match wins
 	auto l1 = Lexer();
 	l1.add("a", "1st");
 	l1.add("a+", "2nd");
 	assert(l1.getTag("a") == "1st");
 	assert(l1.getTag("aa") == "2nd");
 
+	// Test if order of addition realy matters
+	// Use same regexes, but in reverse order
 	auto l2 = Lexer();
-	// same regexes just switched order
 	l2.add("a+", "2nd");
 	l2.add("a", "1st");
 	assert(l2.getTag("a") == "2nd");
