@@ -20,8 +20,8 @@ struct Token
 	bool opEquals(Token other)
 	{
 		return this.match == other.match
-			|| this.tokenText == other.tokenText
-			|| this.tokenTag == other.tokenTag;
+			&& this.tokenText == other.tokenText
+			&& this.tokenTag == other.tokenTag;
 	}
 }
 
@@ -92,18 +92,19 @@ unittest
 
 
 
-/* Take */
+/* Constructed from lexer and input text, to be iterated with foreach */
 struct TokenStream
 {
 	private Lexer matcher;
 	private string input;
 	private size_t startAt=0;
 
+
 	Token front()
 	{
-
-		return matcher.match(input);
+		return matcher.match(input[startAt..$]);
 	}
+
 
 	@property
 	bool empty()
@@ -111,11 +112,14 @@ struct TokenStream
 		return input[startAt..$].empty;
 	}
 
+
 	void popFront()
 	{
-		startAt++;
+
+		startAt += front().tokenText.length;
 	}
 }
+
 
 unittest
 {
@@ -123,18 +127,15 @@ unittest
 	l1.add("a", "1st");
 	l1.add("b+", "2nd");
 
-	auto ts = TokenStream(l1, "babb");
+	auto ts = TokenStream(l1, "bbabb");
 	assert(!ts.empty);
-	assert(ts.front() == Token(true,"b","2nd"));
+	assert(ts.front() == Token(true,"bb","2nd"));
 	ts.popFront();
 	assert(!ts.empty);
 	assert(ts.front() == Token(true,"a","1st"));
 	ts.popFront();
 	assert(!ts.empty);
 	assert(ts.front() == Token(true,"bb","2nd"));
-	ts.popFront();
-	assert(!ts.empty);
-	assert(ts.front() == Token(true,"b","2nd"));
 	ts.popFront();
 	assert(ts.empty);
 }
