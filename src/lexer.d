@@ -31,7 +31,7 @@ struct Lexer
 	alias regex_implementation.dfa.DFA!(regex_implementation.nfa.NFA.StateId) Dfa;
 	NFA nfa;
 
-
+	uint rank = 0;
 
 
 	void add(string regexPattern, Tag tag)
@@ -39,7 +39,8 @@ struct Lexer
 
 		auto ast = parse(regexPattern);
 		auto newNFA = getNFA(ast);
-		newNFA.setEndTag(tag);
+		newNFA.setEndTag(tag, rank);
+		++rank;
 
 		if(nfa.empty)
 		{

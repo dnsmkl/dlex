@@ -18,7 +18,7 @@ class DFA(StateIdNFA, Tag = string)
 	State[] states;
 	StateId start;
 
-	struct TaggedEnd{ StateId stateId; Tag tag; }
+	struct TaggedEnd{ StateId stateId; Tag tag; uint rank; }
 	TaggedEnd[] ends;
 	StateId[AlphaElement][StateId] transitions;
 
@@ -56,13 +56,13 @@ class DFA(StateIdNFA, Tag = string)
 	public
 	void markEnd(StateIdNFA[] reachableStates)
 	{
-		this.ends ~= TaggedEnd(getStateId(reachableStates),Tag.init);
+		this.ends ~= TaggedEnd(getStateId(reachableStates), Tag.init, 0);
 	}
 
 	public
-	void markEndTagged(StateIdNFA[] reachableStates, Tag tag)
+	void markEndTagged(StateIdNFA[] reachableStates, Tag tag, uint rank)
 	{
-		this.ends ~= TaggedEnd(getStateId(reachableStates), tag);
+		this.ends ~= TaggedEnd(getStateId(reachableStates), tag, rank);
 	}
 
 
@@ -234,7 +234,7 @@ unittest
 	assert( dfa.partialMatch("ababab") == 6);
 
 	// test acceptability of empty string
-	dfa.markEndTagged([0], 1);
+	dfa.markEndTagged([0], 1, 0);
 	assert( dfa.fullMatch(""));
 	assert(!dfa.fullMatch("a"));
 	assert(!dfa.fullMatch("b"));

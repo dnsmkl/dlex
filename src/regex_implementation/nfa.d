@@ -15,7 +15,7 @@ struct NFA
 	alias string Tag;
 
 	StateId[][AlphaElement][StateId] transitions;
-	struct TaggedEnd{ StateId stateId; Tag tag; }
+	struct TaggedEnd{ StateId stateId; Tag tag; uint rank; }
 	//StateId[] ends;
 	TaggedEnd[] ends;
 
@@ -54,11 +54,12 @@ struct NFA
 	}
 
 
-	void setEndTag(Tag endTag)
+	void setEndTag(Tag endTag, uint rank)
 	{
 		foreach(ref end; this.ends)
 		{
 			end.tag = endTag;
+			end.rank = rank;
 		}
 	}
 

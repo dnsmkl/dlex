@@ -57,7 +57,7 @@ void transferEndsIfNeeded(NFA.StateId[] reachableStates, NFA.TaggedEnd[] nfaEnds
 	if(containsEnd(nfaEnds, reachableStates))
 	{
 		auto end = whichEnd(nfaEnds, reachableStates);
-		dfa.markEndTagged(reachableStates, end.tag);
+		dfa.markEndTagged(reachableStates, end.tag, end.rank);
 	}
 }
 
@@ -153,7 +153,7 @@ unittest
 	assert( dfaTestSame.fullMatch("abab").tag == "TagSeq");
 
 	auto testSetEndTag = NFA(['a','b','a']);
-	testSetEndTag.setEndTag("testSetEndTag");
+	testSetEndTag.setEndTag("testSetEndTag", 0);
 	auto dfaTestSetEndTag = toDfa(testSetEndTag);
 
 	assert( dfaTestSetEndTag.fullMatch("aba"));
