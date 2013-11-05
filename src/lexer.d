@@ -80,7 +80,7 @@ unittest
 	l1.add("a", "1st");
 	l1.add("a+", "2nd");
 	assert(l1.getTag("a") == "1st");
-	assert(l1.getTag("aa") == "2nd");
+	assert(l1.getTag("aa") == "1st");
 
 	// Test if order of addition realy matters
 	// Use same regexes, but in reverse order

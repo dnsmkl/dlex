@@ -120,11 +120,11 @@ class DFA(StateIdNFA, Tag = string)
 	}
 
 
-	bool isAcceptedEnd(StateId stateId)
+	bool isAcceptedEnd(StateId stateId, uint rankToBeat)
 	{
 		foreach(TaggedEnd s; this.ends)
 		{
-			if(s.stateId == stateId)
+			if(s.stateId == stateId && s.rank <= rankToBeat)
 			{
 				return true;
 			}
@@ -139,6 +139,18 @@ class DFA(StateIdNFA, Tag = string)
 			if(s.stateId == stateId)
 			{
 				return s.tag;
+			}
+		}
+		assert(0);
+	}
+
+	uint getEndRank(StateId stateId)
+	{
+		foreach(TaggedEnd s; this.ends)
+		{
+			if(s.stateId == stateId)
+			{
+				return s.rank;
 			}
 		}
 		assert(0);
@@ -173,13 +185,15 @@ class DFA(StateIdNFA, Tag = string)
 	{
 		size_t lastAccpetedAt = size_t.max; // mark for not found
 		auto match = Match(false, size_t.max, Tag.init);
+		uint bestRank = uint.max;
 
 		StateId currentState = start;
-		if( isAcceptedEnd(currentState) )
+		if( isAcceptedEnd(currentState, bestRank) )
 		{
 			match.count = 0;
 			match.match = true;
 			match.tag = getEndTag(currentState);
+			bestRank = getEndRank(currentState);
 		}
 
 		foreach(size_t index, char c; text)
@@ -189,11 +203,12 @@ class DFA(StateIdNFA, Tag = string)
 			currentState = transitions[currentState][c];
 
 			// Mark possible success, but continue to find longest match
-			if( isAcceptedEnd(currentState) )
+			if( isAcceptedEnd(currentState, bestRank) )
 			{
 				match.count = index+1; // convert to 1-based
 				match.match = true;
 				match.tag = getEndTag(currentState);
+				bestRank = getEndRank(currentState);
 			}
 		}
 		return match;
@@ -261,6 +276,20 @@ unittest
 	assert( dfa.fullMatch("abab").tag  == 0);
 	assert( dfa.fullMatch("ababa").tag == 0);
 	assert( dfa.fullMatch("ababab").tag  == 0);
+
+
+	// Test that min rank wins
+	auto dfa_test_minrank = new DFA!(int,int)();
+
+	dfa_test_minrank.addTransitionFromNFA([0], 'a', [1]);
+	dfa_test_minrank.addTransitionFromNFA([1], 'b', [2]);
+
+	dfa_test_minrank.start = dfa_test_minrank.getStateId(0);
+	dfa_test_minrank.markEndTagged([1],0,0);
+	dfa_test_minrank.markEndTagged([2],1,1);
+
+	assert( !dfa_test_minrank.partialMatch("") );
+	assert( dfa_test_minrank.partialMatch("aba").tag == 0);
 }
 
 
