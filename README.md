@@ -41,7 +41,7 @@ Plan:
 
 
 
-Exammples of internal representations
+Examples of internal representations (just a reminder)
 ----
 For regular expression dataflow will look like this:
     RegexString -> RegexAST -> NFA -> DFA -> match
