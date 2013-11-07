@@ -125,10 +125,11 @@ struct TokenStream
 unittest
 {
 	auto l1 = Lexer();
+	l1.add("ac", "0th");
 	l1.add("a", "1st");
 	l1.add("b+", "2nd");
 
-	auto ts = TokenStream(l1, "bbabb");
+	auto ts = TokenStream(l1, "bbabbac");
 	assert(!ts.empty);
 	assert(ts.front() == Token(true,"bb","2nd"));
 	ts.popFront();
@@ -137,6 +138,9 @@ unittest
 	ts.popFront();
 	assert(!ts.empty);
 	assert(ts.front() == Token(true,"bb","2nd"));
+	ts.popFront();
+	assert(!ts.empty);
+	assert(ts.front() == Token(true,"ac","0th"));
 	ts.popFront();
 	assert(ts.empty);
 }
