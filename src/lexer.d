@@ -127,20 +127,28 @@ unittest
 	auto l1 = Lexer();
 	l1.add("ac", "0th");
 	l1.add("a", "1st");
-	l1.add("b+", "2nd");
+	l1.add("b", "2nd");
+	l1.add("bc", "3rd");
+	l1.add("c", "4th");
 
-	auto ts = TokenStream(l1, "bbabbac");
+	auto ts = TokenStream(l1, "babacbc");
 	assert(!ts.empty);
-	assert(ts.front() == Token(true,"bb","2nd"));
+	assert(ts.front() == Token(true,"b","2nd"));
 	ts.popFront();
 	assert(!ts.empty);
 	assert(ts.front() == Token(true,"a","1st"));
 	ts.popFront();
 	assert(!ts.empty);
-	assert(ts.front() == Token(true,"bb","2nd"));
+	assert(ts.front() == Token(true,"b","2nd"));
 	ts.popFront();
 	assert(!ts.empty);
 	assert(ts.front() == Token(true,"ac","0th"));
+	ts.popFront();
+	assert(!ts.empty);
+	assert(ts.front() == Token(true,"b","2nd"));
+	ts.popFront();
+	assert(!ts.empty);
+	assert(ts.front() == Token(true,"c","4th"));
 	ts.popFront();
 	assert(ts.empty);
 }
