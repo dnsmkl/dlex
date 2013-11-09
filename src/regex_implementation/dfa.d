@@ -23,12 +23,6 @@ class DFA(StateIdNFA, Tag = string)
 	StateId[AlphaElement][StateId] transitions;
 
 
-	this()
-	{
-
-	}
-
-
 
 	bool isDFAStateNewFromNFA(StateIdNFA[] nfaStates)
 	{
