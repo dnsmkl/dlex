@@ -1,8 +1,6 @@
 module regex_implementation.dfa;
 
 
-import std.array;
-
 
 /* Deterministic finate automaton - transformed from NFA */
 class DFA(StateIdNFA, Tag = string)
