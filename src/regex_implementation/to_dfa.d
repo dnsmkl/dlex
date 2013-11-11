@@ -14,7 +14,7 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 {
 	auto dfa = new DFA!(NFA.StateId)(); // result builder
 
- 	dfa.states ~= DFA!(NFA.StateId).makeState(nfa.starts);
+ 	dfa.addStateFromNFA(nfa.starts);
 
 	dfa.start = dfa.getStateId(nfa.starts);
 
@@ -37,8 +37,7 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 					{
 						newBatchOfStartingPoints ~= reachableStates;
 					}
-					auto newDFAState = DFA!(NFA.StateId).makeState(reachableStates);
-					dfa.states ~= DFA!(NFA.StateId).makeState(reachableStates);
+					dfa.addStateFromNFA(reachableStates);
 					transferEndsIfNeeded(reachableStates, nfa.ends, dfa);
 					dfa.addTransitionFromNFA(searchFromNFAStateSet, c, reachableStates);
 				}

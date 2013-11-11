@@ -1,26 +1,13 @@
 module regex_implementation.dfa;
 
 
-
-/* Deterministic finate automaton - transformed from NFA */
-class DFA(StateIdNFA, Tag = string)
+struct PowersetStates(StateIdNFA)
 {
 	import std.container;
-
-
-	alias char AlphaElement;
 	alias RedBlackTree!(StateIdNFA) State;
+	State[] states;
 	alias size_t StateId;
 	alias redBlackTree!(StateIdNFA) makeState;
-
-	State[] states;
-	StateId start;
-
-	struct TaggedEnd{ StateId stateId; Tag tag; uint rank; }
-	TaggedEnd[] ends;
-	StateId[AlphaElement][StateId] transitions;
-
-
 
 	bool isDFAStateNewFromNFA(StateIdNFA[] nfaStates)
 	{
@@ -33,6 +20,60 @@ class DFA(StateIdNFA, Tag = string)
 	{
 		State potentialyNewState = makeState(nfaStates);
 		if(!exists!State(this.states, potentialyNewState)) states ~= potentialyNewState;
+	}
+
+
+	StateId getStateId(StateIdNFA[] nfaIds...)
+	{
+		auto stateForTest = redBlackTree(nfaIds);
+		foreach( StateId id, State state; states )
+		{
+			if( stateForTest == state ) return id;
+		}
+		assert(0, "dfa.getStateId - Id requested for nfaId array that does not exist yet");
+	}
+
+
+	string stateIdToString(StateId id)
+	{
+		import std.conv;
+		string r = "";
+		foreach(e; states[id])
+		{
+			r ~= to!string(e) ~ ",";
+		}
+		return "RBT[" ~ r ~ "]";
+	}
+}
+
+
+
+/* Deterministic finate automaton - transformed from NFA */
+class DFA(StateIdNFA, Tag = string)
+{
+	alias char AlphaElement;
+	alias size_t StateId;
+
+
+	alias PowersetStates!StateIdNFA States;
+	States states;
+	StateId start;
+
+	struct TaggedEnd{ StateId stateId; Tag tag; uint rank; }
+	TaggedEnd[] ends;
+	StateId[AlphaElement][StateId] transitions;
+
+
+
+	bool isDFAStateNewFromNFA(StateIdNFA[] nfaStates)
+	{
+		return states.isDFAStateNewFromNFA(nfaStates);
+	}
+
+
+	void addStateFromNFA(StateIdNFA[] nfaStates)
+	{
+		states.addStateFromNFA(nfaStates);
 	}
 
 	void addTransitionFromNFA(StateIdNFA[] sourceNFA, AlphaElement letter, StateIdNFA[] targetNFA)
@@ -60,30 +101,13 @@ class DFA(StateIdNFA, Tag = string)
 
 	StateId getStateId(StateIdNFA[] nfaIds...)
 	{
-		auto stateForTest = redBlackTree(nfaIds);
-		foreach( StateId id, State state; states )
-		{
-			if( stateForTest == state ) return id;
-		}
-		assert(0, "dfa.getStateId - Id requested for nfaId array that does not exist yet");
-	}
-
-
-	State getState(StateId id)
-	{
-		return states[id];
+		return states.getStateId(nfaIds);
 	}
 
 
 	string stateIdToString(StateId id)
 	{
-		import std.conv;
-		string r = "";
-		foreach(e; states[id])
-		{
-			r ~= to!string(e) ~ ",";
-		}
-		return "RBT[" ~ r ~ "]";
+		return states.stateIdToString(id);
 	}
 
 
