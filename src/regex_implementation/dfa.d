@@ -49,9 +49,8 @@ struct PowersetStates(StateIdNFA)
 
 
 /* Deterministic finate automaton - transformed from NFA */
-class DFA(StateIdNFA, Tag = string)
+class DFA(StateIdNFA, Tag = string, AlphaElement = char)
 {
-	alias char AlphaElement;
 	alias size_t StateId;
 
 
