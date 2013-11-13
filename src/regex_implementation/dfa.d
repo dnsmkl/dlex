@@ -23,7 +23,7 @@ struct PowersetStates(StateIdNFA)
 	}
 
 
-	StateId getStateId(StateIdNFA[] nfaIds...)
+	StateId getStateId(StateIdNFA[] nfaIds)
 	{
 		auto stateForTest = redBlackTree(nfaIds);
 		foreach( StateId id, State state; states )
@@ -98,7 +98,7 @@ class DFA(StateIdNFA, Tag = string, AlphaElement = char)
 	}
 
 
-	StateId getStateId(StateIdNFA[] nfaIds...)
+	StateId getStateId(StateIdNFA[] nfaIds)
 	{
 		return states.getStateId(nfaIds);
 	}
@@ -242,7 +242,7 @@ unittest
 	dfa.addTransitionFromNFA([1], 'b', [2]); // Already acceptable end
 	dfa.addTransitionFromNFA([2], 'a', [1]); // Loop back
 
-	dfa.start = dfa.getStateId(0);
+	dfa.start = dfa.getStateId([0]);
 	dfa.markEnd([2]);
 
 	assert(!dfa.fullMatch(""));
@@ -299,7 +299,7 @@ unittest
 	dfa_test_minrank.addTransitionFromNFA([0], 'a', [1]);
 	dfa_test_minrank.addTransitionFromNFA([1], 'b', [2]);
 
-	dfa_test_minrank.start = dfa_test_minrank.getStateId(0);
+	dfa_test_minrank.start = dfa_test_minrank.getStateId([0]);
 	dfa_test_minrank.markEndTagged([1],0,0);
 	dfa_test_minrank.markEndTagged([2],1,1);
 
