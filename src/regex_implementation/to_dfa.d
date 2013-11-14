@@ -15,8 +15,7 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 	auto dfa = new DFA!(NFA.StateId)(); // result builder
 
  	dfa.addStateFromNFA(nfa.starts);
-
-	dfa.start = dfa.getStateId(nfa.starts);
+	dfa.markStart(nfa.starts);
 
 	transferEndsIfNeeded(nfa.starts, nfa.ends, dfa);
 

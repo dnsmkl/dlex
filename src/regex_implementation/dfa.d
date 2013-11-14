@@ -86,6 +86,12 @@ class DFA(StateIdNFA, Tag = string, AlphaElement = char)
 
 
 	public
+	void markStart(StateIdNFA[] state)
+	{
+		this.start = getStateId(state);
+	}
+
+	public
 	void markEnd(StateIdNFA[] reachableStates)
 	{
 		this.ends ~= TaggedEnd(getStateId(reachableStates), Tag.init, 0);
@@ -104,12 +110,6 @@ class DFA(StateIdNFA, Tag = string, AlphaElement = char)
 	}
 
 
-	string stateIdToString(StateId id)
-	{
-		return states.stateIdToString(id);
-	}
-
-
 	override
 	string toString()
 	{
@@ -121,14 +121,14 @@ class DFA(StateIdNFA, Tag = string, AlphaElement = char)
 
 			foreach(letter, targetStateId; charToTargetId)
 			{
-				r ~= "\n" ~ stateIdToString(sourceStateId)
+				r ~= "\n" ~ states.stateIdToString(sourceStateId)
 					~ " : " ~ letter
-					~ " -> " ~ stateIdToString(targetStateId);
+					~ " -> " ~ states.stateIdToString(targetStateId);
 			}
 		}
 
 		r ~= "\nEnds:";
-		foreach(TaggedEnd s; this.ends) r ~= "\n  " ~ stateIdToString(s.stateId);
+		foreach(TaggedEnd s; this.ends) r ~= "\n  " ~ states.stateIdToString(s.stateId);
 
 		r ~= ("\n-- ============ --");
 		return r;
