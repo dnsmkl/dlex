@@ -92,21 +92,21 @@ class DFA(StateIdNFA, Tag = string, AlphaElement = char)
 	}
 
 	public
-	void markEnd(StateIdNFA[] reachableStates)
+	void markEnd(StateIdNFA[] state)
 	{
-		this.ends ~= TaggedEnd(getStateId(reachableStates), Tag.init, 0);
+		this.ends ~= TaggedEnd(getStateId(state), Tag.init, 0);
 	}
 
 	public
-	void markEndTagged(StateIdNFA[] reachableStates, Tag tag, uint rank)
+	void markEndTagged(StateIdNFA[] state, Tag tag, uint rank)
 	{
-		this.ends ~= TaggedEnd(getStateId(reachableStates), tag, rank);
+		this.ends ~= TaggedEnd(getStateId(state), tag, rank);
 	}
 
 
-	StateId getStateId(StateIdNFA[] nfaIds)
+	StateId getStateId(StateIdNFA[] state)
 	{
-		return states.getStateId(nfaIds);
+		return states.getStateId(state);
 	}
 
 
