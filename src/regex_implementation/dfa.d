@@ -53,9 +53,7 @@ class DFA(StateIdNFA, Tag = string, AlphaElement = char)
 {
 	alias size_t StateId;
 
-
-	alias PowersetStates!StateIdNFA States;
-	States states;
+	PowersetStates!StateIdNFA states;
 	StateId start;
 
 	struct TaggedEnd{ StateId stateId; Tag tag; uint rank; }
