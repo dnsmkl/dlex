@@ -9,14 +9,14 @@ struct PowersetStates(StateIdNFA)
 	alias size_t StateId;
 	alias redBlackTree!(StateIdNFA) makeState;
 
-	bool isDFAStateNewFromNFA(StateIdNFA[] nfaStates)
+	bool isStateNew(StateIdNFA[] nfaStates)
 	{
 		State potentialyNewState = makeState(nfaStates);
 		return !exists!State(this.states, potentialyNewState);
 	}
 
 
-	void addStateFromNFA(StateIdNFA[] nfaStates)
+	void addState(StateIdNFA[] nfaStates)
 	{
 		State potentialyNewState = makeState(nfaStates);
 		if(!exists!State(this.states, potentialyNewState)) states ~= potentialyNewState;
@@ -62,21 +62,21 @@ class DFA(StateIdNFA, Tag = string, AlphaElement = char)
 
 
 
-	bool isDFAStateNewFromNFA(StateIdNFA[] nfaStates)
+	bool isStateNew(StateIdNFA[] nfaStates)
 	{
-		return states.isDFAStateNewFromNFA(nfaStates);
+		return states.isStateNew(nfaStates);
 	}
 
 
-	void addStateFromNFA(StateIdNFA[] nfaStates)
+	void addState(StateIdNFA[] nfaStates)
 	{
-		states.addStateFromNFA(nfaStates);
+		states.addState(nfaStates);
 	}
 
-	void addTransitionFromNFA(StateIdNFA[] sourceNFA, AlphaElement letter, StateIdNFA[] targetNFA)
+	void addTransition(StateIdNFA[] sourceNFA, AlphaElement letter, StateIdNFA[] targetNFA)
 	{
-		addStateFromNFA(sourceNFA);
-		addStateFromNFA(targetNFA);
+		addState(sourceNFA);
+		addState(targetNFA);
 		StateId source = getStateId(sourceNFA);
 		StateId target = getStateId(targetNFA);
 		transitions[source][letter] = target;
@@ -236,9 +236,9 @@ unittest
 {
 	auto dfa = new DFA!(int,int)();
 
-	dfa.addTransitionFromNFA([0], 'a', [1]);
-	dfa.addTransitionFromNFA([1], 'b', [2]); // Already acceptable end
-	dfa.addTransitionFromNFA([2], 'a', [1]); // Loop back
+	dfa.addTransition([0], 'a', [1]);
+	dfa.addTransition([1], 'b', [2]); // Already acceptable end
+	dfa.addTransition([2], 'a', [1]); // Loop back
 
 	dfa.start = dfa.getStateId([0]);
 	dfa.markEnd([2]);
@@ -294,8 +294,8 @@ unittest
 	// Test that min rank wins
 	auto dfa_test_minrank = new DFA!(int,int)();
 
-	dfa_test_minrank.addTransitionFromNFA([0], 'a', [1]);
-	dfa_test_minrank.addTransitionFromNFA([1], 'b', [2]);
+	dfa_test_minrank.addTransition([0], 'a', [1]);
+	dfa_test_minrank.addTransition([1], 'b', [2]);
 
 	dfa_test_minrank.start = dfa_test_minrank.getStateId([0]);
 	dfa_test_minrank.markEndTagged([1],0,0);

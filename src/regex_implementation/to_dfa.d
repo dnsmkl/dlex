@@ -14,7 +14,7 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 {
 	auto dfa = new DFA!(NFA.StateId)(); // result builder
 
- 	dfa.addStateFromNFA(nfa.starts);
+ 	dfa.addState(nfa.starts);
 	dfa.markStart(nfa.starts);
 
 	transferEndsIfNeeded(nfa.starts, nfa.ends, dfa);
@@ -32,13 +32,13 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 				NFA.StateId[] reachableStates = getReachableStatesForChar(nfa, searchFromNFAStateSet, c);
 				if(!reachableStates.empty)
 				{
-					if(dfa.isDFAStateNewFromNFA(reachableStates))
+					if(dfa.isStateNew(reachableStates))
 					{
 						newBatchOfStartingPoints ~= reachableStates;
 					}
-					dfa.addStateFromNFA(reachableStates);
+					dfa.addState(reachableStates);
 					transferEndsIfNeeded(reachableStates, nfa.ends, dfa);
-					dfa.addTransitionFromNFA(searchFromNFAStateSet, c, reachableStates);
+					dfa.addTransition(searchFromNFAStateSet, c, reachableStates);
 				}
 
 				if(c==char.max) break;
