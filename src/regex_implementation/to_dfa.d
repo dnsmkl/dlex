@@ -14,9 +14,7 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 {
 	auto dfa = new DFA!(NFA.StateId)(); // result builder
 
- 	dfa.addState(nfa.starts);
 	dfa.markStart(nfa.starts);
-
 	transferEndsIfNeeded(nfa.starts, nfa.ends, dfa);
 
 	// 'starting' as in 'Single transition is from start to finish'
@@ -36,7 +34,6 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 					{
 						newBatchOfStartingPoints ~= reachableStates;
 					}
-					dfa.addState(reachableStates);
 					transferEndsIfNeeded(reachableStates, nfa.ends, dfa);
 					dfa.addTransition(searchFromNFAStateSet, c, reachableStates);
 				}

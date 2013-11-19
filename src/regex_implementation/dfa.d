@@ -68,15 +68,10 @@ class DFA(StateIdNFA, Tag = string, AlphaElement = char)
 	}
 
 
-	void addState(StateIdNFA[] nfaStates)
-	{
-		states.addState(nfaStates);
-	}
-
 	void addTransition(StateIdNFA[] sourceNFA, AlphaElement letter, StateIdNFA[] targetNFA)
 	{
-		addState(sourceNFA);
-		addState(targetNFA);
+		states.addState(sourceNFA);
+		states.addState(targetNFA);
 		StateId source = getStateId(sourceNFA);
 		StateId target = getStateId(targetNFA);
 		transitions[source][letter] = target;
@@ -86,6 +81,7 @@ class DFA(StateIdNFA, Tag = string, AlphaElement = char)
 	public
 	void markStart(StateIdNFA[] state)
 	{
+		states.addState(state);
 		this.start = getStateId(state);
 	}
 
@@ -98,6 +94,7 @@ class DFA(StateIdNFA, Tag = string, AlphaElement = char)
 	public
 	void markEndTagged(StateIdNFA[] state, Tag tag, uint rank)
 	{
+		states.addState(state);
 		this.ends ~= TaggedEnd(getStateId(state), tag, rank);
 	}
 
