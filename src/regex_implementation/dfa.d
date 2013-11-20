@@ -72,8 +72,8 @@ class DFA(StateIdNFA, Tag = string, AlphaElement = char)
 	{
 		states.addState(sourceNFA);
 		states.addState(targetNFA);
-		StateId source = getStateId(sourceNFA);
-		StateId target = getStateId(targetNFA);
+		StateId source = states.getStateId(sourceNFA);
+		StateId target = states.getStateId(targetNFA);
 		transitions[source][letter] = target;
 	}
 
@@ -82,27 +82,23 @@ class DFA(StateIdNFA, Tag = string, AlphaElement = char)
 	void markStart(StateIdNFA[] state)
 	{
 		states.addState(state);
-		this.start = getStateId(state);
+		this.start = states.getStateId(state);
 	}
 
 	public
 	void markEnd(StateIdNFA[] state)
 	{
-		this.ends ~= TaggedEnd(getStateId(state), Tag.init, 0);
+		this.ends ~= TaggedEnd(states.getStateId(state), Tag.init, 0);
 	}
 
 	public
 	void markEndTagged(StateIdNFA[] state, Tag tag, uint rank)
 	{
 		states.addState(state);
-		this.ends ~= TaggedEnd(getStateId(state), tag, rank);
+		this.ends ~= TaggedEnd(states.getStateId(state), tag, rank);
 	}
 
 
-	StateId getStateId(StateIdNFA[] state)
-	{
-		return states.getStateId(state);
-	}
 
 
 	override
@@ -237,7 +233,7 @@ unittest
 	dfa.addTransition([1], 'b', [2]); // Already acceptable end
 	dfa.addTransition([2], 'a', [1]); // Loop back
 
-	dfa.start = dfa.getStateId([0]);
+	dfa.markStart([0]);
 	dfa.markEnd([2]);
 
 	assert(!dfa.fullMatch(""));
@@ -294,7 +290,7 @@ unittest
 	dfa_test_minrank.addTransition([0], 'a', [1]);
 	dfa_test_minrank.addTransition([1], 'b', [2]);
 
-	dfa_test_minrank.start = dfa_test_minrank.getStateId([0]);
+	dfa_test_minrank.markStart([0]);
 	dfa_test_minrank.markEndTagged([1],0,0);
 	dfa_test_minrank.markEndTagged([2],1,1);
 
