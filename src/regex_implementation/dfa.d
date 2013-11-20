@@ -59,7 +59,9 @@ class DFA(StateIdNFA, Tag = string, AlphaElement = char)
 
 	struct TaggedEnd{ StateId stateId; Tag tag; uint rank; }
 	TaggedEnd[] ends;
-	StateId[AlphaElement][StateId] transitions;
+
+	alias StateId[AlphaElement][StateId] TransitionMap;
+	TransitionMap transitions;
 
 
 
@@ -125,6 +127,36 @@ class DFA(StateIdNFA, Tag = string, AlphaElement = char)
 		r ~= ("\n-- ============ --");
 		return r;
 	}
+
+
+
+	alias Matcher!(StateId, Tag, TaggedEnd, TransitionMap) TMatcher;
+	TMatcher matcher;
+	bool matcherReady=false;
+	void initMatcher()
+	{
+		if(!matcherReady) this.matcher = TMatcher(start, ends, transitions);
+	}
+
+	auto fullMatch(string text)
+	{
+		initMatcher();
+		return matcher.fullMatch(text);
+	}
+
+	auto partialMatch(string text)
+	{
+		initMatcher();
+		return matcher.partialMatch(text);
+	}
+}
+
+
+struct Matcher(StateId, Tag, TaggedEnd, TransitionMap)
+{
+	StateId start;
+	TaggedEnd[] ends;
+	TransitionMap transitions;
 
 
 	bool isAcceptedEnd(StateId stateId, uint rankToBeat)
@@ -219,7 +251,6 @@ class DFA(StateIdNFA, Tag = string, AlphaElement = char)
 			}
 		}
 		return match;
-
 	}
 }
 
