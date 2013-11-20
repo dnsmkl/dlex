@@ -1,6 +1,7 @@
 module regex_implementation.dfa;
 
 
+private
 struct PowersetStates(StateIdNFA)
 {
 	import std.container;
