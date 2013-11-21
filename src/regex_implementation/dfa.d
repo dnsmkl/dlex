@@ -49,18 +49,29 @@ struct PowersetStates(StateIdNFA)
 
 
 
-/* Deterministic finate automaton - transformed from NFA */
-struct DFA(StateIdNFA, Tag = string, AlphaElement = char)
+struct TaggedEnd(StateId,Tag)
 {
-	alias size_t StateId;
+	StateId stateId;
+	Tag tag;
+	uint rank;
+}
 
-	PowersetStates!StateIdNFA states;
+
+/* Deterministic finate automaton - transformed from NFA */
+struct DFA(
+	StateIdNFA
+	, Tag = string
+	, AlphaElement = char
+	, States = PowersetStates!StateIdNFA
+	, StateId = size_t
+	, TaggedEnd = TaggedEnd!(StateId,Tag)
+	, TransitionMap = StateId[AlphaElement][StateId]
+)
+{
+	States states;
+
 	StateId start;
-
-	struct TaggedEnd{ StateId stateId; Tag tag; uint rank; }
 	TaggedEnd[] ends;
-
-	alias StateId[AlphaElement][StateId] TransitionMap;
 	TransitionMap transitions;
 
 
