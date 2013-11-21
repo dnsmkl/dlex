@@ -4,6 +4,7 @@ module regex_implementation.dfa;
 private
 struct PowersetStates(StateIdNFA)
 {
+	private:
 	import std.container: RedBlackTree,redBlackTree;
 	alias redBlackTree!(StateIdNFA) makeState;
 	alias RedBlackTree!(StateIdNFA) State;
@@ -12,7 +13,8 @@ struct PowersetStates(StateIdNFA)
 	alias size_t StateId;
 
 
-
+	// Building part
+	public:
 	bool isStateNew(StateIdNFA[] nfaStates)
 	{
 		State potentialyNewState = makeState(nfaStates);
@@ -25,6 +27,9 @@ struct PowersetStates(StateIdNFA)
 		if(!exists!State(this.states, potentialyNewState)) states ~= potentialyNewState;
 	}
 
+
+	// Retrieval of geberated ids
+	public:
 	StateId getStateId(StateIdNFA[] nfaIds)
 	{
 		auto stateForTest = redBlackTree(nfaIds);
@@ -36,8 +41,8 @@ struct PowersetStates(StateIdNFA)
 	}
 
 
-
 	// Debuging
+	public:
 	string stateIdToString(StateId id)
 	{
 		import std.conv;
@@ -63,6 +68,7 @@ struct TaggedEnd(StateId,Tag)
 
 
 /* Deterministic finate automaton - transformed from NFA */
+public
 struct DFA(
 	StateIdNFA
 	, Tag = string
@@ -81,8 +87,7 @@ struct DFA(
 	TransitionMap transitions;
 
 
-
-	// DFA building part
+	// Building part
 	public:
 	bool isStateNew(StateIdNFA[] nfaStates)
 	{
@@ -116,8 +121,7 @@ struct DFA(
 	}
 
 
-
-	// DFA debuging part
+	// Debuging part
 	public:
 	string toString()
 	{
@@ -143,12 +147,11 @@ struct DFA(
 	}
 
 
-
-	// DFA matching part
+	// Matching part
+	private:
 	Matcher matcher;
 	bool matcherReady=false;
 
-	private
 	void initMatcher()
 	{
 		if(!matcherReady) this.matcher = Matcher(start, ends, transitions);
@@ -231,6 +234,7 @@ struct Matcher(StateId, Tag, TaggedEnd, TransitionMap)
 			return count == s;
 		}
 	}
+
 
 	public:
 	Match fullMatch(string text)
