@@ -246,7 +246,6 @@ struct Matcher(StateId, Tag, TaggedEnd, TransitionMap)
 
 	Match partialMatch(string text)
 	{
-		size_t lastAccpetedAt = size_t.max; // mark for not found
 		auto match = Match(false, size_t.max, Tag.init);
 		uint bestRank = uint.max;
 
