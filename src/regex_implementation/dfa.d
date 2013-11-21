@@ -4,11 +4,14 @@ module regex_implementation.dfa;
 private
 struct PowersetStates(StateIdNFA)
 {
-	import std.container;
+	import std.container: RedBlackTree,redBlackTree;
+	alias redBlackTree!(StateIdNFA) makeState;
 	alias RedBlackTree!(StateIdNFA) State;
+
 	State[] states;
 	alias size_t StateId;
-	alias redBlackTree!(StateIdNFA) makeState;
+
+
 
 	bool isStateNew(StateIdNFA[] nfaStates)
 	{
@@ -16,13 +19,11 @@ struct PowersetStates(StateIdNFA)
 		return !exists!State(this.states, potentialyNewState);
 	}
 
-
 	void addState(StateIdNFA[] nfaStates)
 	{
 		State potentialyNewState = makeState(nfaStates);
 		if(!exists!State(this.states, potentialyNewState)) states ~= potentialyNewState;
 	}
-
 
 	StateId getStateId(StateIdNFA[] nfaIds)
 	{
@@ -35,6 +36,8 @@ struct PowersetStates(StateIdNFA)
 	}
 
 
+
+	// Debuging
 	string stateIdToString(StateId id)
 	{
 		import std.conv;
@@ -49,12 +52,14 @@ struct PowersetStates(StateIdNFA)
 
 
 
+private
 struct TaggedEnd(StateId,Tag)
 {
 	StateId stateId;
 	Tag tag;
 	uint rank;
 }
+
 
 
 /* Deterministic finate automaton - transformed from NFA */
@@ -66,6 +71,7 @@ struct DFA(
 	, StateId = size_t
 	, TaggedEnd = TaggedEnd!(StateId,Tag)
 	, TransitionMap = StateId[AlphaElement][StateId]
+	, Matcher = Matcher!(StateId, Tag, TaggedEnd, TransitionMap)
 )
 {
 	States states;
@@ -76,11 +82,12 @@ struct DFA(
 
 
 
+	// DFA building part
+	public:
 	bool isStateNew(StateIdNFA[] nfaStates)
 	{
 		return states.isStateNew(nfaStates);
 	}
-
 
 	void addTransition(StateIdNFA[] sourceNFA, AlphaElement letter, StateIdNFA[] targetNFA)
 	{
@@ -91,21 +98,17 @@ struct DFA(
 		transitions[source][letter] = target;
 	}
 
-
-	public
 	void markStart(StateIdNFA[] state)
 	{
 		states.addState(state);
 		this.start = states.getStateId(state);
 	}
 
-	public
 	void markEnd(StateIdNFA[] state)
 	{
 		this.ends ~= TaggedEnd(states.getStateId(state), Tag.init, 0);
 	}
 
-	public
 	void markEndTagged(StateIdNFA[] state, Tag tag, uint rank)
 	{
 		states.addState(state);
@@ -114,7 +117,8 @@ struct DFA(
 
 
 
-
+	// DFA debuging part
+	public:
 	string toString()
 	{
 		import std.conv;
@@ -140,14 +144,17 @@ struct DFA(
 
 
 
-	alias Matcher!(StateId, Tag, TaggedEnd, TransitionMap) TMatcher;
-	TMatcher matcher;
+	// DFA matching part
+	Matcher matcher;
 	bool matcherReady=false;
+
+	private
 	void initMatcher()
 	{
-		if(!matcherReady) this.matcher = TMatcher(start, ends, transitions);
+		if(!matcherReady) this.matcher = Matcher(start, ends, transitions);
 	}
 
+	public:
 	auto fullMatch(string text)
 	{
 		initMatcher();
@@ -162,8 +169,11 @@ struct DFA(
 }
 
 
+
+private
 struct Matcher(StateId, Tag, TaggedEnd, TransitionMap)
 {
+	private:
 	StateId start;
 	TaggedEnd[] ends;
 	TransitionMap transitions;
@@ -205,7 +215,6 @@ struct Matcher(StateId, Tag, TaggedEnd, TransitionMap)
 		assert(0);
 	}
 
-
 	struct Match
 	{
 		bool match;
@@ -223,6 +232,7 @@ struct Matcher(StateId, Tag, TaggedEnd, TransitionMap)
 		}
 	}
 
+	public:
 	Match fullMatch(string text)
 	{
 		auto match = partialMatch(text);
