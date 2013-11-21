@@ -12,7 +12,7 @@ import std.array:empty;
 /* Get equivalent *deterministic* state mashine */
 DFA!(NFA.StateId) toDfa(NFA nfa)
 {
-	auto dfa = new DFA!(NFA.StateId)(); // result builder
+	auto dfa = DFA!(NFA.StateId)(); // result builder
 
 	dfa.markStart(nfa.starts);
 	transferEndsIfNeeded(nfa.starts, nfa.ends, dfa);

@@ -50,7 +50,7 @@ struct PowersetStates(StateIdNFA)
 
 
 /* Deterministic finate automaton - transformed from NFA */
-class DFA(StateIdNFA, Tag = string, AlphaElement = char)
+struct DFA(StateIdNFA, Tag = string, AlphaElement = char)
 {
 	alias size_t StateId;
 
@@ -104,7 +104,6 @@ class DFA(StateIdNFA, Tag = string, AlphaElement = char)
 
 
 
-	override
 	string toString()
 	{
 		import std.conv;
