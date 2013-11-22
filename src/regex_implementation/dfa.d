@@ -28,7 +28,7 @@ struct PowersetStates(StateIdNFA)
 	}
 
 
-	// Retrieval of geberated ids
+	// Retrieval of generated ids
 	public:
 	StateId getStateId(StateIdNFA[] nfaIds)
 	{
