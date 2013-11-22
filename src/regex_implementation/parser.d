@@ -136,4 +136,6 @@ unittest
 	}
 
 	assertParseExceptionMsg("(a+", "Unmatched paranthesis in (a+");
+
+	assertParsedAST("a)a", "L(a)"); // FIXME
 }
