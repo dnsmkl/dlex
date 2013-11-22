@@ -20,6 +20,8 @@ ast.RegexAST parse(string regexText)
 private
 RegexAST recursiveParse(string regexText, ref size_t currentChar)
 {
+	bool insideParanthesis = false;
+
 	ast.RegexAST[] resultAccumulator;
 	for(; currentChar<regexText.length; ++currentChar)
 	{
@@ -30,12 +32,17 @@ RegexAST recursiveParse(string regexText, ref size_t currentChar)
 			/* sequence start */
 			case '(':
 				++currentChar; //   <<---- INDEX MANIPULATION!!!!!!!!
+				insideParanthesis = true;
 				resultAccumulator ~= recursiveParse(regexText, currentChar);
+				if(currentChar < regexText.length && regexText[currentChar] == ')')
+				{
+					insideParanthesis = false;
+				}
 			break;
 
 			/* sequence end */
 			case ')':
-				return makeSeqOnlyIfNeeded(resultAccumulator);
+				goto exitFor;
 			break;
 
 			/* repeat 0 or more times */
@@ -71,6 +78,8 @@ RegexAST recursiveParse(string regexText, ref size_t currentChar)
 				resultAccumulator ~= new ast.Letter(c);
 		}
 	}
+	exitFor:
+	if(insideParanthesis) throw new Exception("Unmatched paranthesis in " ~ regexText);
 	return makeSeqOnlyIfNeeded(resultAccumulator);
 }
 
@@ -110,4 +119,21 @@ unittest
 	assertParsedAST("a?"    , "Opt(L(a))");
 	assertParsedAST("(ab)?" , "Opt(Seq[L(a),L(b)])");
 	assertParsedAST("a+"    , "Seq[L(a),Rep(L(a))]");
+
+
+
+	void assertParseExceptionMsg(string patternString, string expectedMsg)
+	{
+		try
+		{
+			parse(patternString);
+			assert(0);
+		}
+		catch(Exception e)
+		{
+			assert(e.msg == expectedMsg);
+		}
+	}
+
+	assertParseExceptionMsg("(a+", "Unmatched paranthesis in (a+");
 }
