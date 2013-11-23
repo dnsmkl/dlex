@@ -18,10 +18,8 @@ ast.RegexAST parse(string regexText)
    Note: Index is incremented to notify calling frame, how much input was parsed
 */
 private
-RegexAST recursiveParse(string regexText, ref size_t currentChar)
+RegexAST recursiveParse(string regexText, ref size_t currentChar, bool insideParanthesis = false)
 {
-	bool insideParanthesis = false;
-
 	ast.RegexAST[] resultAccumulator;
 	for(; currentChar<regexText.length; ++currentChar)
 	{
@@ -33,7 +31,7 @@ RegexAST recursiveParse(string regexText, ref size_t currentChar)
 			case '(':
 				++currentChar; //   <<---- INDEX MANIPULATION!!!!!!!!
 				insideParanthesis = true;
-				resultAccumulator ~= recursiveParse(regexText, currentChar);
+				resultAccumulator ~= recursiveParse(regexText, currentChar, true);
 				if(currentChar < regexText.length && regexText[currentChar] == ')')
 				{
 					insideParanthesis = false;
@@ -42,6 +40,8 @@ RegexAST recursiveParse(string regexText, ref size_t currentChar)
 
 			/* sequence end */
 			case ')':
+				if(insideParanthesis == false) throw new Exception("Unmatched paranthesis in " ~ regexText);
+				insideParanthesis = false;
 				goto exitFor;
 			break;
 
@@ -136,6 +136,5 @@ unittest
 	}
 
 	assertParseExceptionMsg("(a+", "Unmatched paranthesis in (a+");
-
-	assertParsedAST("a)a", "L(a)"); // FIXME
+	assertParseExceptionMsg("a)a", "Unmatched paranthesis in a)a");
 }
