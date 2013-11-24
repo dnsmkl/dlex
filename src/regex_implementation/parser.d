@@ -73,6 +73,11 @@ RegexAST recursiveParse(string regexText, ref size_t currentChar, bool insidePar
 				resultAccumulator[0] = new ast.Or(resultAsSingleNode, recursiveParse(regexText, currentChar));
 			break;
 
+			/* character classes */
+			case '[':
+				resultAccumulator ~= parseCharacterClass(regexText,currentChar);
+			break;
+
 			/* simple letter */
 			default:
 				resultAccumulator ~= new ast.Letter(c);
@@ -93,6 +98,41 @@ ast.RegexAST makeSeqOnlyIfNeeded(ast.RegexAST[] resultAccumulator)
 }
 
 
+ast.RegexAST parseCharacterClass(string regexText, ref size_t currentChar)
+{
+	assert(regexText[currentChar] == '[');
+	ast.RegexAST r;
+	++currentChar;
+
+	for(; regexText[currentChar] != ']'; ++currentChar)
+	{
+		if(cast(ast.Or) r || cast(ast.Letter) r)
+		{
+			r = new ast.Or(r, new ast.Letter(regexText[currentChar]));
+		}
+		else
+		{
+			r = new ast.Letter(regexText[currentChar]);
+		}
+	}
+	assert(regexText[currentChar] == ']');
+	return r;
+}
+unittest
+{
+	void assertParsedCharClass(string patternString, string expectedASTsString )
+	{
+		size_t nr = 0;
+		auto r = parseCharacterClass(patternString, nr);
+		assert( r.toString == expectedASTsString
+			, patternString
+			~ " gives " ~ r.toString
+			~ " vs expected " ~ expectedASTsString );
+	}
+	assertParsedCharClass("[a]", "L(a)");
+	assertParsedCharClass("[ab]", "Or{L(a)|L(b)}");
+	assertParsedCharClass("[abc]", "Or{Or{L(a)|L(b)}|L(c)}");
+}
 
 
 unittest
@@ -119,6 +159,7 @@ unittest
 	assertParsedAST("a?"    , "Opt(L(a))");
 	assertParsedAST("(ab)?" , "Opt(Seq[L(a),L(b)])");
 	assertParsedAST("a+"    , "Seq[L(a),Rep(L(a))]");
+	assertParsedAST("[ab]a" , "Seq[Or{L(a)|L(b)},L(a)]");
 
 
 
