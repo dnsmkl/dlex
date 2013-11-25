@@ -48,7 +48,7 @@ RegexAST recursiveParse(string regexText, ref size_t currentChar, bool insidePar
 			/* repeat 0 or more times */
 			case '*':
 				auto lastIx = resultAccumulator.length-1;
-				resultAccumulator[lastIx] = new ast.Repeat(resultAccumulator[lastIx]); // transform into repeat
+				resultAccumulator[lastIx] = new ast.Repeat(resultAccumulator[lastIx]);
 			break;
 
 			/* repeat 1 or more times */
