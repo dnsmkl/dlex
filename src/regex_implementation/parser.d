@@ -8,7 +8,7 @@ alias regex_implementation.ast ast;
 ast.RegexAST parse(string regexText)
 {
 	size_t startAt = 0;
-	return recursiveParse(regexText, startAt);
+	return recursiveParse!(Par.no)(regexText, startAt);
 
 }
 
@@ -17,9 +17,15 @@ ast.RegexAST parse(string regexText)
 /* Recursive parse, that starts at specified index
    Note: Index is incremented to notify calling frame, how much input was parsed
 */
+enum Par{yes, no}; // With paranthesis enclosing or no
 private
-RegexAST recursiveParse(string regexText, ref size_t currentChar, bool insideParanthesis = false)
+RegexAST recursiveParse(Par paranthesis = Par.no)(string regexText, ref size_t currentChar)
 {
+	static if(paranthesis == Par.yes)
+	{
+		if(regexText[currentChar]!='(') throw new Exception("Unmatched paranthesis in " ~ regexText);
+		++currentChar;
+	}
 	ast.RegexAST[] resultAccumulator;
 	for(; currentChar<regexText.length; ++currentChar)
 	{
@@ -29,20 +35,13 @@ RegexAST recursiveParse(string regexText, ref size_t currentChar, bool insidePar
 		{
 			/* sequence start */
 			case '(':
-				++currentChar; //   <<---- INDEX MANIPULATION!!!!!!!!
-				insideParanthesis = true;
-				resultAccumulator ~= recursiveParse(regexText, currentChar, true);
-				if(currentChar < regexText.length && regexText[currentChar] == ')')
-				{
-					insideParanthesis = false;
-				}
+				resultAccumulator ~= recursiveParse!(Par.yes)(regexText, currentChar);
 			break;
 
 			/* sequence end */
 			case ')':
-				if(insideParanthesis == false) throw new Exception("Unmatched paranthesis in " ~ regexText);
-				insideParanthesis = false;
-				goto exitFor;
+				static if(paranthesis == Par.no) throw new Exception("Unmatched paranthesis in " ~ regexText);
+				return singleNode!(ast.Sequence)(resultAccumulator);
 			break;
 
 			/* repeat 0 or more times */
@@ -70,7 +69,10 @@ RegexAST recursiveParse(string regexText, ref size_t currentChar, bool insidePar
 				auto resultAsSingleNode = singleNode!(ast.Sequence)(resultAccumulator.dup);
 				resultAccumulator.length = 1;
 				++currentChar; //   <<---- INDEX MANIPULATION!!!!!!!!
-				resultAccumulator[0] = new ast.Or(resultAsSingleNode, recursiveParse(regexText, currentChar));
+				resultAccumulator[0] = new ast.Or(
+						resultAsSingleNode
+						, recursiveParse!(paranthesis.no)(regexText, currentChar)
+					);
 			break;
 
 			/* character classes */
@@ -83,8 +85,7 @@ RegexAST recursiveParse(string regexText, ref size_t currentChar, bool insidePar
 				resultAccumulator ~= new ast.Letter(c);
 		}
 	}
-	exitFor:
-	if(insideParanthesis) throw new Exception("Unmatched paranthesis in " ~ regexText);
+	static if(paranthesis == Par.yes) throw new Exception("Unmatched paranthesis in " ~ regexText);
 	return singleNode!(ast.Sequence)(resultAccumulator);
 }
 
