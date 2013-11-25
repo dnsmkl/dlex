@@ -19,23 +19,21 @@ ast.RegexAST parse(string regexText)
 */
 enum Par{yes, no}; // With paranthesis enclosing or no
 private
-RegexAST recursiveParse(Par paranthesis = Par.no)(string regexText, ref size_t currentChar)
+RegexAST recursiveParse(Par paranthesis = Par.no)(string regexText, ref size_t currentIndex)
 {
 	static if(paranthesis == Par.yes)
 	{
-		if(regexText[currentChar]!='(') throw new Exception("Unmatched paranthesis in " ~ regexText);
-		++currentChar;
+		if(regexText[currentIndex] != '(') throw new Exception("Unmatched paranthesis in " ~ regexText);
+		++currentIndex;
 	}
 	ast.RegexAST[] resultAccumulator;
-	for(; currentChar<regexText.length; ++currentChar)
+	for(; currentIndex<regexText.length; ++currentIndex)
 	{
-		char c = regexText[currentChar];
-
-		switch(c)
+		switch(regexText[currentIndex])
 		{
 			/* sequence start */
 			case '(':
-				resultAccumulator ~= recursiveParse!(Par.yes)(regexText, currentChar);
+				resultAccumulator ~= recursiveParse!(Par.yes)(regexText, currentIndex);
 			break;
 
 			/* sequence end */
@@ -68,21 +66,21 @@ RegexAST recursiveParse(Par paranthesis = Par.no)(string regexText, ref size_t c
 				// without ".dup" it goes into infinite recursion with ast.Sequence.toString
 				auto resultAsSingleNode = singleNode!(ast.Sequence)(resultAccumulator.dup);
 				resultAccumulator.length = 1;
-				++currentChar; //   <<---- INDEX MANIPULATION!!!!!!!!
+				++currentIndex; //   <<---- INDEX MANIPULATION!!!!!!!!
 				resultAccumulator[0] = new ast.Or(
 						resultAsSingleNode
-						, recursiveParse!(paranthesis.no)(regexText, currentChar)
+						, recursiveParse!(paranthesis.no)(regexText, currentIndex)
 					);
 			break;
 
 			/* character classes */
 			case '[':
-				resultAccumulator ~= parseCharacterClass(regexText,currentChar);
+				resultAccumulator ~= parseCharacterClass(regexText, currentIndex);
 			break;
 
 			/* simple letter */
 			default:
-				resultAccumulator ~= new ast.Letter(c);
+				resultAccumulator ~= new ast.Letter(regexText[currentIndex]);
 		}
 	}
 	static if(paranthesis == Par.yes) throw new Exception("Unmatched paranthesis in " ~ regexText);
@@ -100,24 +98,24 @@ ast.RegexAST singleNode(ASTTypeForEnslosure)(ast.RegexAST[] resultAccumulator)
 }
 
 
-ast.RegexAST parseCharacterClass(string regexText, ref size_t currentChar)
+ast.RegexAST parseCharacterClass(string regexText, ref size_t currentIndex)
 {
-	assert(regexText[currentChar] == '[');
+	assert(regexText[currentIndex] == '[');
 	ast.RegexAST r;
-	++currentChar;
+	++currentIndex;
 
-	for(; regexText[currentChar] != ']'; ++currentChar)
+	for(; regexText[currentIndex] != ']'; ++currentIndex)
 	{
 		if(cast(ast.Or) r || cast(ast.Letter) r)
 		{
-			r = new ast.Or(r, new ast.Letter(regexText[currentChar]));
+			r = new ast.Or(r, new ast.Letter(regexText[currentIndex]));
 		}
 		else
 		{
-			r = new ast.Letter(regexText[currentChar]);
+			r = new ast.Letter(regexText[currentIndex]);
 		}
 	}
-	assert(regexText[currentChar] == ']');
+	assert(regexText[currentIndex] == ']');
 	return r;
 }
 unittest
