@@ -67,7 +67,7 @@ RegexAST recursiveParse(string regexText, ref size_t currentChar, bool insidePar
 			/* alteration */
 			case '|':
 				// without ".dup" it goes into infinite recursion with ast.Sequence.toString
-				auto resultAsSingleNode = makeSeqOnlyIfNeeded(resultAccumulator.dup);
+				auto resultAsSingleNode = singleNode!(ast.Sequence)(resultAccumulator.dup);
 				resultAccumulator.length = 1;
 				++currentChar; //   <<---- INDEX MANIPULATION!!!!!!!!
 				resultAccumulator[0] = new ast.Or(resultAsSingleNode, recursiveParse(regexText, currentChar));
@@ -85,15 +85,16 @@ RegexAST recursiveParse(string regexText, ref size_t currentChar, bool insidePar
 	}
 	exitFor:
 	if(insideParanthesis) throw new Exception("Unmatched paranthesis in " ~ regexText);
-	return makeSeqOnlyIfNeeded(resultAccumulator);
+	return singleNode!(ast.Sequence)(resultAccumulator);
 }
 
 
+/* Output single node.  So it could be used in later composition (e.g. repeat) */
 private
-ast.RegexAST makeSeqOnlyIfNeeded(ast.RegexAST[] resultAccumulator)
+ast.RegexAST singleNode(ASTTypeForEnslosure)(ast.RegexAST[] resultAccumulator)
 {
 	if(resultAccumulator.length==1) return resultAccumulator[0];
-	else if(resultAccumulator.length>=2) return new ast.Sequence(resultAccumulator);
+	else if(resultAccumulator.length>=2) return new ASTTypeForEnslosure(resultAccumulator);
 	assert(0);
 }
 
