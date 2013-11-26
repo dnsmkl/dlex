@@ -78,6 +78,10 @@ RegexAST recursiveParse(Par paranthesis = Par.no)(string regexText, ref size_t c
 				resultAccumulator ~= parseCharacterClass(regexText, currentIndex);
 			break;
 
+			case ']':
+				throw new Exception("Unmatched bracket in " ~ regexText);
+			break;
+
 			/* simple letter */
 			default:
 				resultAccumulator ~= new ast.Letter(regexText[currentIndex]);
@@ -104,7 +108,7 @@ ast.RegexAST parseCharacterClass(string regexText, ref size_t currentIndex)
 	ast.RegexAST r;
 	++currentIndex;
 
-	for(; regexText[currentIndex] != ']'; ++currentIndex)
+	for(; currentIndex<regexText.length && regexText[currentIndex] != ']'; ++currentIndex)
 	{
 		if(cast(ast.Or) r || cast(ast.Letter) r)
 		{
@@ -115,7 +119,8 @@ ast.RegexAST parseCharacterClass(string regexText, ref size_t currentIndex)
 			r = new ast.Letter(regexText[currentIndex]);
 		}
 	}
-	assert(regexText[currentIndex] == ']');
+	if(currentIndex >= regexText.length
+		|| regexText[currentIndex] != ']') throw new Exception("Unmatched bracket in " ~ regexText);
 	return r;
 }
 unittest
@@ -178,4 +183,6 @@ unittest
 
 	assertParseExceptionMsg("(a+", "Unmatched paranthesis in (a+");
 	assertParseExceptionMsg("a)a", "Unmatched paranthesis in a)a");
+	assertParseExceptionMsg("a]a", "Unmatched bracket in a]a");
+	assertParseExceptionMsg("[aa", "Unmatched bracket in [aa");
 }
