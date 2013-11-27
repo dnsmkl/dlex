@@ -55,6 +55,21 @@ RegexAST recursiveParse(Par paranthesis = Par.no)(string regexText, ref size_t c
 				resultAccumulator[lastIx] = new ast.Sequence(last, new ast.Repeat(last));
 			break;
 
+			/* repeat specified amount of times */
+			case '{':
+				auto lastIx = resultAccumulator.length-1;
+				auto last = resultAccumulator[lastIx];
+				auto repeatTimes = parseNumberedQuantifier(regexText, currentIndex);
+				for(size_t i = 0; i<repeatTimes-1; ++i)
+				{
+					resultAccumulator[lastIx] = new ast.Sequence(resultAccumulator[lastIx], last);
+				}
+			break;
+
+			case '}':
+				throw new Exception("Unmatched curly braces in " ~ regexText);
+			break;
+
 			/* optional */
 			case '?':
 				auto lastIx = resultAccumulator.length-1;
@@ -140,6 +155,97 @@ unittest
 }
 
 
+size_t parseNumberedQuantifier(string regexText, ref size_t currentIndex)
+{
+	if(regexText[currentIndex] != '{') throw new Exception("Unmatched curly braces in " ~ regexText);
+	++currentIndex;
+
+	auto result = parseInteger(regexText, currentIndex);
+
+	if(regexText[currentIndex] != '}') throw new Exception("Unmatched curly braces in " ~ regexText);
+	++currentIndex;
+
+	return result;
+}
+unittest
+{
+	void assertNumberedQuantifier(string regexText, size_t expectedNumber, size_t expectedIndex)
+	{
+		size_t index = 0;
+		assert(
+			parseNumberedQuantifier(regexText, index) == expectedNumber
+			,"regexText:" ~ regexText
+		);
+		assert(index == expectedIndex, "regexText:" ~ regexText);
+	}
+	assertNumberedQuantifier("{2}", 2, 3);
+	assertNumberedQuantifier("{2},text", 2, 3);
+	assertNumberedQuantifier("{123},text", 123, 5);
+}
+
+
+size_t parseInteger(string regexText, ref size_t currentIndex)
+{
+	size_t result = 0;
+	while(currentIndex < regexText.length
+		&& isDigit(regexText[currentIndex]))
+	{
+		auto digit = digitToInt(regexText[currentIndex]);
+		result *= 10;
+		result += digit;
+		++currentIndex;
+	}
+	return result;
+}
+unittest
+{
+	void assertInteger(string regexText, size_t expectedInteger)
+	{
+		size_t index = 0;
+		assert(
+			parseInteger(regexText, index) == expectedInteger
+			,"regexText:" ~ regexText
+		);
+	}
+	assertInteger("000",0);
+	assertInteger("10",10);
+	assertInteger("197532,",197532);
+}
+
+
+bool isDigit(char c)
+{
+	return c >= '0' && c <= '9';
+}
+unittest
+{
+	assert(isDigit('0'));
+	assert(isDigit('1'));
+	assert(isDigit('9'));
+	assert(!isDigit('u'));
+	assert(!isDigit('-'));
+}
+
+
+size_t digitToInt(char c)
+{
+	return c - '0';
+}
+unittest
+{
+	assert(digitToInt('0') == 0);
+	assert(digitToInt('1') == 1);
+	assert(digitToInt('9') == 9);
+}
+
+
+
+
+
+
+
+
+
 unittest
 {
 	void assertParsedAST(string patternString, string expectedASTsString )
@@ -165,6 +271,8 @@ unittest
 	assertParsedAST("(ab)?" , "Opt(Seq[L(a),L(b)])");
 	assertParsedAST("a+"    , "Seq[L(a),Rep(L(a))]");
 	assertParsedAST("[ab]a" , "Seq[Or{L(a)|L(b)},L(a)]");
+	assertParsedAST("a{2}"  , "Seq[L(a),L(a)]");
+	assertParsedAST("a{3}"  , "Seq[Seq[L(a),L(a)],L(a)]");
 
 
 
