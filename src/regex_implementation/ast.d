@@ -123,25 +123,25 @@ class Letter:RegexAST
 }
 
 // TODO: Implement RepeatBounded, which can be converted to Optional + lots of copying
-version(none)
 unittest
 {
-	import std.stdio;
+	void assertASTString(RegexAST ast, string expectedASTsString )
+	{
+		assert(
+			ast.toString == expectedASTsString
+			, "ast.toString gives " ~ ast.toString
+				~ " vs expected " ~ expectedASTsString
+		);
+	}
+	assertASTString(new Letter('a'), "L(a)");
+	assertASTString(new Optional(new Letter('a')), "Opt(L(a))");
+	assertASTString(new Repeat(new Letter('a')), "Rep(L(a))");
+	assertASTString(new Or(new Letter('a'),new Letter('b')), "Or{L(a)|L(b)}");
+	assertASTString(new Sequence(new Letter('a'),new Letter('b')), "Seq[L(a),L(b)]");
 
-	writeln( "\n" );
-	writeln( "-------------------------" );
-	writeln( "-- RegexAST - unittest --" );
-	writeln( "\n" );
-
-	writeln(new Letter('a'));
-	writeln(new Sequence(new Letter('a'), new Letter('b'), new Letter('c')));
-	writeln(new Or(new Repeat(new Optional(new Sequence(new Letter('a'), new Letter('b'), new Letter('c')))), new Letter('x')));
-	writeln(new Sequence(new Repeat(new Sequence(new Letter('a'), new Letter('b'))), new Letter('a'), new Letter('b')));
-
-	writeln( "\n" );
-	writeln( "-- RegexAST - unittest --" );
-	writeln( "-------------------------" );
-	writeln( "\n" );
+	assertASTString(new Repeat(new Repeat(new Letter('a'))), "Rep(Rep(L(a)))");
+	assertASTString(new Or(new Or(new Letter('a'),new Letter('b')),new Letter('c')), "Or{Or{L(a)|L(b)}|L(c)}");
+	assertASTString(new Sequence(new Sequence(new Letter('a'),new Letter('b')),new Letter('c')), "Seq[Seq[L(a),L(b)],L(c)]");
 }
 
 
