@@ -33,8 +33,8 @@ class Sequence:RegexAST
 	override
 	string toString()
 	{
-		import std.array;
-		import std.algorithm;
+		import std.array:join;
+		import std.algorithm:map;
 		return "Seq["
 			~ join
 			(
