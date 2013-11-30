@@ -272,7 +272,7 @@ unittest
 	assertParsedAST("a+"    , "Seq[L(a),Rep(L(a))]");
 	assertParsedAST("[ab]a" , "Seq[Or{L(a)|L(b)},L(a)]");
 	assertParsedAST("a{2}"  , "Seq[L(a),L(a)]");
-	assertParsedAST("a{3}"  , "Seq[Seq[L(a),L(a)],L(a)]");
+	assertParsedAST("a{3}"  , "Seq[L(a),L(a),L(a)]");
 
 
 

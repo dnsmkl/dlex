@@ -20,8 +20,28 @@ class Sequence:RegexAST
 
 	this(RegexAST regexAST1, RegexAST regexAST2)
 	{
-		this.sequenceOfRegexASTs ~= regexAST1;
-		this.sequenceOfRegexASTs ~= regexAST2;
+		// Try to flaten resulting ast
+		// e.g. instead of Seq[Seq[a,b],Seq[c,d]], make Seq[a,b,c,d]
+		if(cast(Sequence) regexAST1)
+		{
+			this.sequenceOfRegexASTs ~= (cast(Sequence) regexAST1).sequenceOfRegexASTs;
+		}
+		else
+		{
+			this.sequenceOfRegexASTs ~= regexAST1;
+		}
+
+		if(cast(Sequence) regexAST2)
+		{
+			foreach(ast; (cast(Sequence) regexAST2).sequenceOfRegexASTs)
+			{
+				this.sequenceOfRegexASTs ~= ast;
+			}
+		}
+		else
+		{
+			this.sequenceOfRegexASTs ~= regexAST2;
+		}
 	}
 
 	void add(RegexAST regexAST)
@@ -141,7 +161,13 @@ unittest
 
 	assertASTString(new Repeat(new Repeat(new Letter('a'))), "Rep(Rep(L(a)))");
 	assertASTString(new Or(new Or(new Letter('a'),new Letter('b')),new Letter('c')), "Or{Or{L(a)|L(b)}|L(c)}");
-	assertASTString(new Sequence(new Sequence(new Letter('a'),new Letter('b')),new Letter('c')), "Seq[Seq[L(a),L(b)],L(c)]");
+	assertASTString(
+		new Sequence(
+			new Sequence(new Letter('a'),new Letter('b'))
+			,new Sequence(new Letter('c'),new Letter('d'))
+		)
+		, "Seq[L(a),L(b),L(c),L(d)]"
+	);
 }
 
 
