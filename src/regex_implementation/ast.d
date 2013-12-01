@@ -95,7 +95,14 @@ class Repeat:RegexAST
 	RegexAST repeatableRegexAST;
 	this(RegexAST repeatableRegexAST)
 	{
-		this.repeatableRegexAST = repeatableRegexAST;
+		if(cast(Repeat) repeatableRegexAST)
+		{
+			this.repeatableRegexAST = (cast(Repeat) repeatableRegexAST).repeatableRegexAST;
+		}
+		else
+		{
+			this.repeatableRegexAST = repeatableRegexAST;
+		}
 	}
 
 
@@ -159,7 +166,7 @@ unittest
 	assertASTString(new Or(new Letter('a'),new Letter('b')), "Or{L(a)|L(b)}");
 	assertASTString(new Sequence(new Letter('a'),new Letter('b')), "Seq[L(a),L(b)]");
 
-	assertASTString(new Repeat(new Repeat(new Letter('a'))), "Rep(Rep(L(a)))");
+	assertASTString(new Repeat(new Repeat(new Letter('a'))), "Rep(L(a))");
 	assertASTString(new Or(new Or(new Letter('a'),new Letter('b')),new Letter('c')), "Or{Or{L(a)|L(b)}|L(c)}");
 	assertASTString(
 		new Sequence(

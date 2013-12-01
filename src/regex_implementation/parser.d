@@ -258,7 +258,7 @@ unittest
 
 	assertParsedAST("a"     , "L(a)");
 	assertParsedAST("(a)"   , "L(a)");
-	assertParsedAST("a**"   , "Rep(Rep(L(a)))");
+	assertParsedAST("a**"   , "Rep(L(a))");
 	assertParsedAST("ab"    , "Seq[L(a),L(b)]");
 	assertParsedAST("abc"   , "Seq[L(a),L(b),L(c)]");
 	assertParsedAST("ab*"   , "Seq[L(a),Rep(L(b))]");
