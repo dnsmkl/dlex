@@ -44,11 +44,6 @@ class Sequence:RegexAST
 		}
 	}
 
-	void add(RegexAST regexAST)
-	{
-		this.sequenceOfRegexASTs ~= regexAST;
-	}
-
 
 	override
 	string toString()
@@ -120,7 +115,14 @@ class Optional:RegexAST
 	RegexAST optionalRegexAST;
 	this(RegexAST optionalRegexAST)
 	{
-		this.optionalRegexAST = optionalRegexAST;
+		if(cast(Optional) optionalRegexAST)
+		{
+			this.optionalRegexAST = (cast(Optional) optionalRegexAST).optionalRegexAST;
+		}
+		else
+		{
+			this.optionalRegexAST = optionalRegexAST;
+		}
 	}
 
 
@@ -166,6 +168,7 @@ unittest
 	assertASTString(new Or(new Letter('a'),new Letter('b')), "Or{L(a)|L(b)}");
 	assertASTString(new Sequence(new Letter('a'),new Letter('b')), "Seq[L(a),L(b)]");
 
+	assertASTString(new Optional(new Optional(new Letter('a'))), "Opt(L(a))");
 	assertASTString(new Repeat(new Repeat(new Letter('a'))), "Rep(L(a))");
 	assertASTString(new Or(new Or(new Letter('a'),new Letter('b')),new Letter('c')), "Or{Or{L(a)|L(b)}|L(c)}");
 	assertASTString(

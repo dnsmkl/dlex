@@ -158,12 +158,6 @@ struct DFA(
 	}
 
 	public:
-	auto fullMatch(string text)
-	{
-		initMatcher();
-		return matcher.fullMatch(text);
-	}
-
 	auto partialMatch(string text)
 	{
 		initMatcher();
@@ -237,13 +231,6 @@ struct Matcher(StateId, Tag, TaggedEnd, TransitionMap)
 
 
 	public:
-	Match fullMatch(string text)
-	{
-		auto match = partialMatch(text);
-		if(match.count == text.length) return match;
-		else return Match(false,0,Tag.init);
-	}
-
 	Match partialMatch(string text)
 	{
 		auto match = Match(false, size_t.max, Tag.init);
@@ -291,15 +278,6 @@ unittest
 	dfa.markStart([0]);
 	dfa.markEnd([2]);
 
-	assert(!dfa.fullMatch(""));
-	assert(!dfa.fullMatch("a"));
-	assert(!dfa.fullMatch("b"));
-	assert( dfa.fullMatch("ab"));
-	assert(!dfa.fullMatch("aba"));
-	assert( dfa.fullMatch("abab"));
-	assert(!dfa.fullMatch("ababa"));
-	assert( dfa.fullMatch("ababab"));
-
 	assert( dfa.partialMatch("") == size_t.max);
 	assert( dfa.partialMatch("a") == size_t.max);
 	assert( dfa.partialMatch("b") == size_t.max);
@@ -311,14 +289,6 @@ unittest
 
 	// test acceptability of empty string
 	dfa.markEndTagged([0], 1, 0);
-	assert( dfa.fullMatch(""));
-	assert(!dfa.fullMatch("a"));
-	assert(!dfa.fullMatch("b"));
-	assert(!dfa.fullMatch("aba"));
-	assert( dfa.fullMatch("abab"));
-	assert(!dfa.fullMatch("ababa"));
-	assert( dfa.fullMatch("ababab"));
-
 
 	assert( dfa.partialMatch("") == 0);
 	assert( dfa.partialMatch("a") == 0);
@@ -328,16 +298,6 @@ unittest
 	assert( dfa.partialMatch("abab") == 4);
 	assert( dfa.partialMatch("ababa") == 4);
 	assert( dfa.partialMatch("ababab") == 6);
-
-	// test string tags
-	assert( dfa.fullMatch("").tag  == 1);
-	assert( dfa.fullMatch("a").tag != 1);
-	assert( dfa.fullMatch("b").tag == 0);
-	assert( dfa.fullMatch("aba").tag == 0);
-	assert( dfa.fullMatch("abab").tag  == 0);
-	assert( dfa.fullMatch("ababa").tag == 0);
-	assert( dfa.fullMatch("ababab").tag  == 0);
-
 
 	// Test that min rank wins
 	auto dfa_test_minrank = new DFA!(int,int)();

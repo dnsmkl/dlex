@@ -25,7 +25,7 @@ struct Regex
 
 	bool matchExact(string text)
 	{
-		return cast(bool) dfa.fullMatch(text);
+		return dfa.partialMatch(text).count == text.length;
 	}
 
 	string dumpDFA()
@@ -105,14 +105,6 @@ unittest
 	assert( testMix.matchExact("babaaa"));
 	assert( testMix.matchExact("babbaaa"));
 	assert( testMix.matchExact("bbbaaa"));
-
-
-	/* Following tests are just to capture current behaviour.
-	   Such behaviour could/should be improved */
-	auto testUnfinishedSequence = Regex("((aaab");
-	assert( testUnfinishedSequence.matchExact("aaab"));
-	assert(!testUnfinishedSequence.matchExact("aaa"));
-	assert(!testUnfinishedSequence.matchExact("aaaba"));
 
 
 	auto testAlphabet = Regex("ab``");

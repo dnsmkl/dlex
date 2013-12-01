@@ -118,39 +118,43 @@ unittest
 	nfa.makeOptional();       // (ab)*
 	nfa.append(NFA(['a','b'])); // (ab)*(ab)
 
-	auto dfaSeq = toDfa(nfa);
-	assert(!dfaSeq.fullMatch(""));
-	assert(!dfaSeq.fullMatch("a"));
-	assert( dfaSeq.fullMatch("ab"));
-	assert(!dfaSeq.fullMatch("aba"));
-	assert( dfaSeq.fullMatch("abab"));
 
-	assert( dfaSeq.fullMatch("").tag == "");
-	assert( dfaSeq.fullMatch("a").tag == "");
-	assert( dfaSeq.fullMatch("ab").tag == "TagSeq");
-	assert( dfaSeq.fullMatch("aba").tag == "");
-	assert( dfaSeq.fullMatch("abab").tag == "TagSeq");
+	auto dfaSeq = toDfa(nfa);
+	assert(!dfaSeq.partialMatch(""));
+	assert(!dfaSeq.partialMatch("a"));
+	assert( dfaSeq.partialMatch("ab"));
+	assert( dfaSeq.partialMatch("aba"));
+	assert( dfaSeq.partialMatch("abab"));
+
+	assert( dfaSeq.partialMatch("").tag == "");
+	assert( dfaSeq.partialMatch("a").tag == "");
+	assert( dfaSeq.partialMatch("ab").tag == "TagSeq");
+	assert( dfaSeq.partialMatch("aba").tag == "TagSeq");
+	assert( dfaSeq.partialMatch("abab").tag == "TagSeq");
+	assert( dfaSeq.partialMatch("ab").count == 2);
+	assert( dfaSeq.partialMatch("aba").count == 2);
+	assert( dfaSeq.partialMatch("abab").count == 4);
 
 	nfa.addUnion(NFA(['b', 'b'], "TagUnion"));
 	auto dfaUnion = toDfa(nfa);
 
-	assert( dfaUnion.fullMatch("").tag == "");
-	assert( dfaUnion.fullMatch("ab").tag == "TagSeq");
-	assert( dfaUnion.fullMatch("bb").tag == "TagUnion");
-	assert( dfaUnion.fullMatch("abab").tag == "TagSeq");
+	assert( dfaUnion.partialMatch("").tag == "");
+	assert( dfaUnion.partialMatch("ab").tag == "TagSeq");
+	assert( dfaUnion.partialMatch("bb").tag == "TagUnion");
+	assert( dfaUnion.partialMatch("abab").tag == "TagSeq");
 
 	nfa.addUnion(NFA(['b', 'b'], "TagOverlap")); // same NFA ('bb') unioned again with different tag
 	auto dfaTestSame = toDfa(nfa);
 
-	assert( dfaTestSame.fullMatch("").tag == "");
-	assert( dfaTestSame.fullMatch("ab").tag == "TagSeq");
-	assert( dfaTestSame.fullMatch("bb").tag == "TagUnion");
-	assert( dfaTestSame.fullMatch("abab").tag == "TagSeq");
+	assert( dfaTestSame.partialMatch("").tag == "");
+	assert( dfaTestSame.partialMatch("ab").tag == "TagSeq");
+	assert( dfaTestSame.partialMatch("bb").tag == "TagUnion");
+	assert( dfaTestSame.partialMatch("abab").tag == "TagSeq");
 
 	auto testSetEndTag = NFA(['a','b','a']);
 	testSetEndTag.setEndTag("testSetEndTag", 0);
 	auto dfaTestSetEndTag = toDfa(testSetEndTag);
 
-	assert( dfaTestSetEndTag.fullMatch("aba"));
-	assert( dfaTestSetEndTag.fullMatch("aba").tag == "testSetEndTag");
+	assert( dfaTestSetEndTag.partialMatch("aba"));
+	assert( dfaTestSetEndTag.partialMatch("aba").tag == "testSetEndTag");
 }
