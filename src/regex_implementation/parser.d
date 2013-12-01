@@ -8,20 +8,21 @@ alias regex_implementation.ast ast;
 ast.RegexAST parse(string regexText)
 {
 	size_t startAt = 0;
-	return recursiveParse!(Par.no)(regexText, startAt);
+	return recursiveParse!(Par.none)(regexText, startAt);
 
 }
 
 
+// Needed to keep track what parathesis to expect during recursiveParse
+enum Par{both, none, right};
 
 /* Recursive parse, that starts at specified index
    Note: Index is incremented to notify calling frame, how much input was parsed
 */
-enum Par{yes, no}; // With paranthesis enclosing or no
 private
-RegexAST recursiveParse(Par paranthesis = Par.no)(string regexText, ref size_t currentIndex)
+RegexAST recursiveParse(Par paranthesis = Par.none)(string regexText, ref size_t currentIndex)
 {
-	static if(paranthesis == Par.yes)
+	static if(paranthesis == Par.both)
 	{
 		if(regexText[currentIndex] != '(') throw new Exception("Unmatched paranthesis in " ~ regexText);
 		++currentIndex;
@@ -33,12 +34,13 @@ RegexAST recursiveParse(Par paranthesis = Par.no)(string regexText, ref size_t c
 		{
 			/* sequence start */
 			case '(':
-				resultAccumulator ~= recursiveParse!(Par.yes)(regexText, currentIndex);
+				resultAccumulator ~= recursiveParse!(Par.both)(regexText, currentIndex);
 			break;
 
 			/* sequence end */
 			case ')':
-				static if(paranthesis == Par.no) throw new Exception("Unmatched paranthesis in " ~ regexText);
+				static if(paranthesis == Par.none) throw new Exception("Unmatched paranthesis in " ~ regexText);
+				static if(paranthesis == Par.right) --currentIndex;
 				return singleNode!(ast.Sequence)(resultAccumulator);
 			break;
 
@@ -84,7 +86,7 @@ RegexAST recursiveParse(Par paranthesis = Par.no)(string regexText, ref size_t c
 				++currentIndex; //   <<---- INDEX MANIPULATION!!!!!!!!
 				resultAccumulator[0] = new ast.Or(
 						resultAsSingleNode
-						, recursiveParse!(paranthesis.no)(regexText, currentIndex)
+						, recursiveParse!(Par.right)(regexText, currentIndex)
 					);
 			break;
 
@@ -102,7 +104,10 @@ RegexAST recursiveParse(Par paranthesis = Par.no)(string regexText, ref size_t c
 				resultAccumulator ~= new ast.Letter(regexText[currentIndex]);
 		}
 	}
-	static if(paranthesis == Par.yes) throw new Exception("Unmatched paranthesis in " ~ regexText);
+	//import std.conv:to;
+	//import std.stdio;
+	//writeln( to!string(currentIndex));
+	static if(paranthesis == Par.both) throw new Exception("Unmatched paranthesis in " ~ regexText);
 	return singleNode!(ast.Sequence)(resultAccumulator);
 }
 
@@ -258,6 +263,7 @@ unittest
 
 	assertParsedAST("a"     , "L(a)");
 	assertParsedAST("(a)"   , "L(a)");
+	assertParsedAST("(a|b)" , "Or{L(a)|L(b)}");
 	assertParsedAST("a**"   , "Rep(L(a))");
 	assertParsedAST("ab"    , "Seq[L(a),L(b)]");
 	assertParsedAST("abc"   , "Seq[L(a),L(b),L(c)]");
