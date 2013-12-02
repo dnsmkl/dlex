@@ -11,8 +11,7 @@ import regex_implementation.dfa;
 
 struct Regex
 {
-	alias regex_implementation.dfa.DFA!(regex_implementation.nfa.NFA.StateId) Dfa;
-	Dfa dfa;
+	alias regex_implementation.dfa.Builder!(regex_implementation.nfa.NFA.StateId) Dfa;
 	NFA nfa;
 	RegexAST ast;
 
@@ -20,19 +19,11 @@ struct Regex
 	{
 		this.ast = parse(regexPattern);
 		this.nfa = getNFA(ast);
-		this.dfa = toDfa(nfa);
 	}
 
 	bool matchExact(string text)
 	{
-		return dfa.partialMatch(text).count == text.length;
-	}
-
-	string dumpDFA()
-	{
-		import std.stdio;
-		auto r = dfa.toString();
-		return r;
+		return toDfa(nfa).partialMatch(text).count == text.length;
 	}
 
 	string dumpNFA()

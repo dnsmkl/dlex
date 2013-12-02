@@ -9,13 +9,14 @@ import std.array:empty;
 
 
 
-/* Get equivalent *deterministic* state mashine */
-DFA!(NFA.StateId) toDfa(NFA nfa)
+/* Get equivalent *deterministic* state mashine
+	Returns dfa.Matcher */
+auto toDfa(NFA nfa)
 {
-	auto dfa = DFA!(NFA.StateId)(); // result builder
+	auto dfaBuilder = Builder!(NFA.StateId)(); // result builder
 
-	dfa.markStart(nfa.starts);
-	transferEndsIfNeeded(nfa.starts, nfa.ends, dfa);
+	dfaBuilder.markStart(nfa.starts);
+	transferEndsIfNeeded(nfa.starts, nfa.ends, dfaBuilder);
 
 	// 'starting' as in 'Single transition is from start to finish'
 	NFA.StateId[][] startingPoints = [nfa.starts];
@@ -30,12 +31,12 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 				NFA.StateId[] reachableStates = getReachableStatesForChar(nfa, searchFromNFAStateSet, c);
 				if(!reachableStates.empty)
 				{
-					if(dfa.isStateNew(reachableStates))
+					if(dfaBuilder.isStateNew(reachableStates))
 					{
 						newBatchOfStartingPoints ~= reachableStates;
 					}
-					transferEndsIfNeeded(reachableStates, nfa.ends, dfa);
-					dfa.addTransition(searchFromNFAStateSet, c, reachableStates);
+					transferEndsIfNeeded(reachableStates, nfa.ends, dfaBuilder);
+					dfaBuilder.addTransition(searchFromNFAStateSet, c, reachableStates);
 				}
 
 				if(c==char.max) break;
@@ -44,10 +45,10 @@ DFA!(NFA.StateId) toDfa(NFA nfa)
 		startingPoints = newBatchOfStartingPoints;
 	}
 
-	return dfa;
+	return dfaBuilder.makeMatcher();
 }
 
-void transferEndsIfNeeded(NFA.StateId[] reachableStates, NFA.TaggedEnd[] nfaEnds, ref DFA!(NFA.StateId) dfa )
+void transferEndsIfNeeded(NFA.StateId[] reachableStates, NFA.TaggedEnd[] nfaEnds, ref Builder!(NFA.StateId) dfa )
 {
 	if(containsEnd(nfaEnds, reachableStates))
 	{

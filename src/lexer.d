@@ -28,7 +28,7 @@ struct Token
 
 struct Lexer
 {
-	alias regex_implementation.dfa.DFA!(regex_implementation.nfa.NFA.StateId) Dfa;
+	alias regex_implementation.dfa.Builder!(regex_implementation.nfa.NFA.StateId) Dfa;
 	NFA nfa;
 
 	uint rank = 0;

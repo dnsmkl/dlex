@@ -1,6 +1,47 @@
 module regex_implementation.dfa;
+/* Implement deterministic finite automaton (DFA)
+	DFA is to be used for doing pattern matching */
 
 
+
+/* DFA as Dumb data object.
+	Used internaly in module to pass data between Builder and Mather */
+private
+struct DFA(
+	TStateId = size_t
+	, TTaggedEnd = TaggedEnd!(TStateId,Tag)
+	, TTransitionMap = StateId[AlphaElement][TStateId]
+)
+{
+	alias TStateId StateId;
+	alias TTaggedEnd TaggedEnd;
+	alias TTransitionMap TransitionMap;
+
+	StateId start;
+	TaggedEnd[] ends;
+	TransitionMap transitions;
+}
+
+
+
+/* Needed in DFA during matching to denote accepted end state.
+	Tag will be needed for lexing to determine, which regex succeeded.
+	In case more then one regex can match, rank is used to determine the winner
+	Lower rank wins */
+private
+struct TaggedEnd(StateId, TTag)
+{
+	alias TTag Tag;
+
+	StateId stateId;
+	Tag tag;
+	uint rank;
+}
+
+
+
+/* Used in the Builder - handles state creation from set of NFA states.
+	Each distinct set of NFA states is assigned a unique state id */
 private
 struct PowersetStates(StateIdNFA)
 {
@@ -57,19 +98,9 @@ struct PowersetStates(StateIdNFA)
 
 
 
-private
-struct TaggedEnd(StateId,Tag)
-{
-	StateId stateId;
-	Tag tag;
-	uint rank;
-}
-
-
-
-/* Deterministic finate automaton - transformed from NFA */
+/* Routines for building the DFA */
 public
-struct DFA(
+struct Builder(
 	StateIdNFA
 	, Tag = string
 	, AlphaElement = char
@@ -77,14 +108,12 @@ struct DFA(
 	, StateId = size_t
 	, TaggedEnd = TaggedEnd!(StateId,Tag)
 	, TransitionMap = StateId[AlphaElement][StateId]
-	, Matcher = Matcher!(StateId, Tag, TaggedEnd, TransitionMap)
+	, DFA = DFA!(StateId, TaggedEnd, TransitionMap)
+	, Matcher = Matcher!(DFA)
 )
 {
 	States states;
-
-	StateId start;
-	TaggedEnd[] ends;
-	TransitionMap transitions;
+	DFA dfa;
 
 
 	// Building part
@@ -100,35 +129,41 @@ struct DFA(
 		states.addState(targetNFA);
 		StateId source = states.getStateId(sourceNFA);
 		StateId target = states.getStateId(targetNFA);
-		transitions[source][letter] = target;
+		this.dfa.transitions[source][letter] = target;
 	}
 
 	void markStart(StateIdNFA[] state)
 	{
 		states.addState(state);
-		this.start = states.getStateId(state);
+		this.dfa.start = states.getStateId(state);
 	}
 
 	void markEnd(StateIdNFA[] state)
 	{
-		this.ends ~= TaggedEnd(states.getStateId(state), Tag.init, 0);
+		this.dfa.ends ~= TaggedEnd(states.getStateId(state), Tag.init, 0);
 	}
 
 	void markEndTagged(StateIdNFA[] state, Tag tag, uint rank)
 	{
 		states.addState(state);
-		this.ends ~= TaggedEnd(states.getStateId(state), tag, rank);
+		this.dfa.ends ~= TaggedEnd(states.getStateId(state), tag, rank);
+	}
+
+
+	// Output of the builder is matcher
+	Matcher makeMatcher()
+	{
+		return Matcher(this.dfa);
 	}
 
 
 	// Debuging part
-	public:
 	string toString()
 	{
 		import std.conv;
 		string r = "\n-- DFA.toString --";
-		r ~= "\nStart @ " ~ to!string(start);
-		foreach(StateId sourceStateId, StateId[char] charToTargetId; transitions)
+		r ~= "\nStart @ " ~ to!string(this.dfa.start);
+		foreach(StateId sourceStateId, StateId[char] charToTargetId; this.dfa.transitions)
 		{
 
 			foreach(letter, targetStateId; charToTargetId)
@@ -140,45 +175,30 @@ struct DFA(
 		}
 
 		r ~= "\nEnds:";
-		foreach(TaggedEnd s; this.ends) r ~= "\n  " ~ states.stateIdToString(s.stateId);
+		foreach(TaggedEnd s; this.dfa.ends) r ~= "\n  " ~ states.stateIdToString(s.stateId);
 
 		r ~= ("\n-- ============ --");
 		return r;
-	}
-
-
-	// Matching part
-	private:
-	Matcher matcher;
-	bool matcherReady=false;
-
-	void initMatcher()
-	{
-		if(!matcherReady) this.matcher = Matcher(start, ends, transitions);
-	}
-
-	public:
-	auto partialMatch(string text)
-	{
-		initMatcher();
-		return matcher.partialMatch(text);
 	}
 }
 
 
 
+/* Routines for making matches using the DFA */
 private
-struct Matcher(StateId, Tag, TaggedEnd, TransitionMap)
+struct Matcher(
+	DFA
+	, Tag = DFA.TaggedEnd.Tag
+	, TransitionMap = DFA.TransitionMap
+)
 {
 	private:
-	StateId start;
-	TaggedEnd[] ends;
-	TransitionMap transitions;
+	DFA dfa;
 
 
-	bool isAcceptedEnd(StateId stateId, uint rankToBeat)
+	bool isAcceptedEnd(DFA.StateId stateId, uint rankToBeat)
 	{
-		foreach(TaggedEnd s; this.ends)
+		foreach(s; this.dfa.ends)
 		{
 			if(s.stateId == stateId && s.rank <= rankToBeat)
 			{
@@ -188,9 +208,9 @@ struct Matcher(StateId, Tag, TaggedEnd, TransitionMap)
 		return false;
 	}
 
-	Tag getEndTag(StateId stateId)
+	auto getEndTag(DFA.StateId stateId)
 	{
-		foreach(TaggedEnd s; this.ends)
+		foreach(s; this.dfa.ends)
 		{
 			if(s.stateId == stateId)
 			{
@@ -200,9 +220,9 @@ struct Matcher(StateId, Tag, TaggedEnd, TransitionMap)
 		assert(0);
 	}
 
-	uint getEndRank(StateId stateId)
+	uint getEndRank(DFA.StateId stateId)
 	{
-		foreach(TaggedEnd s; this.ends)
+		foreach(s; this.dfa.ends)
 		{
 			if(s.stateId == stateId)
 			{
@@ -236,7 +256,7 @@ struct Matcher(StateId, Tag, TaggedEnd, TransitionMap)
 		auto match = Match(false, size_t.max, Tag.init);
 		uint bestRank = uint.max;
 
-		StateId currentState = start;
+		DFA.StateId currentState = this.dfa.start;
 		if( isAcceptedEnd(currentState, bestRank) )
 		{
 			match.count = 0;
@@ -245,20 +265,23 @@ struct Matcher(StateId, Tag, TaggedEnd, TransitionMap)
 			bestRank = getEndRank(currentState);
 		}
 
-		foreach(size_t index, char c; text)
+		size_t index = 1;
+
+		foreach(char c; text)
 		{
-			if( currentState !in transitions ) break;
-			if( c !in transitions[currentState] ) break;
-			currentState = transitions[currentState][c];
+			if( currentState !in this.dfa.transitions ) break;
+			if( c !in this.dfa.transitions[currentState] ) break;
+			currentState = this.dfa.transitions[currentState][c];
 
 			// Mark possible success, but continue to find longest match
 			if( isAcceptedEnd(currentState, bestRank) )
 			{
-				match.count = index+1; // convert to 1-based
+				match.count = index; // convert to 1-based
 				match.match = true;
 				match.tag = getEndTag(currentState);
 				bestRank = getEndRank(currentState);
 			}
+			++index;
 		}
 		return match;
 	}
@@ -269,48 +292,53 @@ struct Matcher(StateId, Tag, TaggedEnd, TransitionMap)
 
 unittest
 {
-	auto dfa = new DFA!(int,int)();
+	auto dfaBuilder = new Builder!(int,int)();
 
-	dfa.addTransition([0], 'a', [1]);
-	dfa.addTransition([1], 'b', [2]); // Already acceptable end
-	dfa.addTransition([2], 'a', [1]); // Loop back
+	dfaBuilder.addTransition([0], 'a', [1]);
+	dfaBuilder.addTransition([1], 'b', [2]); // Already acceptable end
+	dfaBuilder.addTransition([2], 'a', [1]); // Loop back
 
-	dfa.markStart([0]);
-	dfa.markEnd([2]);
+	dfaBuilder.markStart([0]);
+	dfaBuilder.markEnd([2]);
 
-	assert( dfa.partialMatch("") == size_t.max);
-	assert( dfa.partialMatch("a") == size_t.max);
-	assert( dfa.partialMatch("b") == size_t.max);
-	assert( dfa.partialMatch("ab") == 2);
-	assert( dfa.partialMatch("aba") == 2);
-	assert( dfa.partialMatch("abab") == 4);
-	assert( dfa.partialMatch("ababa") == 4);
-	assert( dfa.partialMatch("ababab") == 6);
+	auto dfaMatcher1 = dfaBuilder.makeMatcher();
 
-	// test acceptability of empty string
-	dfa.markEndTagged([0], 1, 0);
+	assert( dfaMatcher1.partialMatch("") == size_t.max);
+	assert( dfaMatcher1.partialMatch("a") == size_t.max);
+	assert( dfaMatcher1.partialMatch("b") == size_t.max);
+	assert( dfaMatcher1.partialMatch("ab") == 2);
+	assert( dfaMatcher1.partialMatch("aba") == 2);
+	assert( dfaMatcher1.partialMatch("abab") == 4);
+	assert( dfaMatcher1.partialMatch("ababa") == 4);
+	assert( dfaMatcher1.partialMatch("ababab") == 6);
 
-	assert( dfa.partialMatch("") == 0);
-	assert( dfa.partialMatch("a") == 0);
-	assert( dfa.partialMatch("b") == 0);
-	assert( dfa.partialMatch("ab") == 2);
-	assert( dfa.partialMatch("aba") == 2);
-	assert( dfa.partialMatch("abab") == 4);
-	assert( dfa.partialMatch("ababa") == 4);
-	assert( dfa.partialMatch("ababab") == 6);
+	dfaBuilder.markEndTagged([0], 1, 0);
+	auto dfaMatcher2 = dfaBuilder.makeMatcher();
+
+	assert( dfaMatcher1.partialMatch("") == size_t.max);
+	assert( dfaMatcher2.partialMatch("") == 0);
+	assert( dfaMatcher2.partialMatch("a") == 0);
+	assert( dfaMatcher2.partialMatch("b") == 0);
+	assert( dfaMatcher2.partialMatch("ab") == 2);
+	assert( dfaMatcher2.partialMatch("aba") == 2);
+	assert( dfaMatcher2.partialMatch("abab") == 4);
+	assert( dfaMatcher2.partialMatch("ababa") == 4);
+	assert( dfaMatcher2.partialMatch("ababab") == 6);
 
 	// Test that min rank wins
-	auto dfa_test_minrank = new DFA!(int,int)();
+	auto dfaBuilder_test_minrank = new Builder!(int,int)();
 
-	dfa_test_minrank.addTransition([0], 'a', [1]);
-	dfa_test_minrank.addTransition([1], 'b', [2]);
+	dfaBuilder_test_minrank.addTransition([0], 'a', [1]);
+	dfaBuilder_test_minrank.addTransition([1], 'b', [2]);
 
-	dfa_test_minrank.markStart([0]);
-	dfa_test_minrank.markEndTagged([1],0,0);
-	dfa_test_minrank.markEndTagged([2],1,1);
+	dfaBuilder_test_minrank.markStart([0]);
+	dfaBuilder_test_minrank.markEndTagged([1],0,0);
+	dfaBuilder_test_minrank.markEndTagged([2],1,1);
 
-	assert( !dfa_test_minrank.partialMatch("") );
-	assert( dfa_test_minrank.partialMatch("aba").tag == 0);
+	auto dfaMatcher_test_minrank = dfaBuilder_test_minrank.makeMatcher();
+
+	assert( !dfaMatcher_test_minrank.partialMatch("") );
+	assert( dfaMatcher_test_minrank.partialMatch("aba").tag == 0);
 }
 
 
