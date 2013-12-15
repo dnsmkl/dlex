@@ -1,14 +1,14 @@
 module lexer;
 
-import regex_implementation.parser;
-import regex_implementation.ast;
-import regex_implementation.to_nfa;
-import regex_implementation.nfa;
-import regex_implementation.to_dfa;
-import regex_implementation.dfa;
+
+import std.array:empty;
+import regex;
+
 
 
 alias string Tag;
+
+
 
 struct Token
 {
@@ -28,48 +28,25 @@ struct Token
 
 struct Lexer
 {
-	alias regex_implementation.dfa.Builder!(regex_implementation.nfa.NFA.StateId) Dfa;
-	NFA nfa;
-
+	Regex regex;
 	uint rank = 0;
 
 
 	void add(string regexPattern, Tag tag)
 	{
-
-		auto ast = parse(regexPattern);
-		auto newNFA = getNFA(ast);
-		newNFA.setEndTag(tag, rank);
-		++rank;
-
-		if(nfa.empty)
-		{
-			nfa = newNFA;
-		}
-		else
-		{
-			nfa.addUnion(newNFA);
-		}
+		regex.appendOr(regexPattern, tag);
 	}
 
 
 	Token match(string text)
 	{
-		auto dfa = toDfa(this.nfa);
-		auto dfaMatch = dfa.partialMatch(text);
-
+		auto regexMatch = regex.matchStart(text);
 		auto r = Token();
-		r.match = dfaMatch.match;
-		r.tokenTag = dfaMatch.tag;
-		r.tokenText = text[0 .. dfa.partialMatch(text).count];
+		r.match = regexMatch.match;
+		r.tokenTag = regexMatch.tag;
+		r.tokenText = regexMatch.text;
 		return r;
 	}
-
-	Tag getTag(string text)
-	{
-		return this.match(text).tokenTag;
-	}
-
 }
 
 
@@ -79,16 +56,16 @@ unittest
 	auto l1 = Lexer();
 	l1.add("a", "1st");
 	l1.add("a+", "2nd");
-	assert(l1.getTag("a") == "1st");
-	assert(l1.getTag("aa") == "1st");
+	assert(l1.match("a").tokenTag == "1st");
+	assert(l1.match("aa").tokenTag == "1st");
 
 	// Test if order of addition realy matters
 	// Use same regexes, but in reverse order
 	auto l2 = Lexer();
 	l2.add("a+", "2nd");
 	l2.add("a", "1st");
-	assert(l2.getTag("a") == "2nd");
-	assert(l2.getTag("aa") == "2nd");
+	assert(l2.match("a").tokenTag == "2nd");
+	assert(l2.match("aa").tokenTag == "2nd");
 }
 
 
@@ -110,6 +87,7 @@ struct TokenStream
 	@property
 	bool empty()
 	{
+
 		return input[startAt..$].empty;
 	}
 

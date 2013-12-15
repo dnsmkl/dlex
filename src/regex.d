@@ -8,34 +8,82 @@ import regex_implementation.to_dfa;
 import regex_implementation.dfa;
 
 
+alias string Tag;
 
+
+
+struct Match
+{
+	bool match;
+	string text;
+	Tag tag;
+
+	// no idea why, but without explicit opEquals comparison fails some times
+	bool opEquals(Match other)
+	{
+		return this.match == other.match
+			&& this.text == other.text
+			&& this.tag == other.tag;
+	}
+}
+
+
+
+/* Tagged regex pattern matcher
+	regexText -> NFA -> DFA -> matcher */
 struct Regex
 {
-	alias regex_implementation.dfa.Builder!(regex_implementation.nfa.NFA.StateId) Dfa;
 	NFA nfa;
-	RegexAST ast;
+	uint rank = 0;
+
 
 	this(string regexPattern)
 	{
-		this.ast = parse(regexPattern);
-		this.nfa = getNFA(ast);
+		appendOr(regexPattern, "");
 	}
+
+
+	void appendOr(string regexPattern, Tag tag)
+	{
+		auto ast = parse(regexPattern);
+		auto newNFA = getNFA(ast);
+		newNFA.setEndTag(tag, rank);
+		++rank;
+
+		if(nfa.empty)
+		{
+			nfa = newNFA;
+		}
+		else
+		{
+			nfa.addUnion(newNFA);
+		}
+	}
+
+
+	Match matchStart(string text)
+	{
+		auto dfa = toDfa(this.nfa);
+		auto dfaMatch = dfa.partialMatch(text);
+
+		auto r = Match();
+		r.match = dfaMatch.match;
+		if(r.match)
+		{
+			r.tag = dfaMatch.tag;
+			r.text = text[0 .. dfa.partialMatch(text).count];
+		}
+		return r;
+	}
+
 
 	bool matchExact(string text)
 	{
-		return toDfa(nfa).partialMatch(text).count == text.length;
-	}
-
-	string dumpNFA()
-	{
-		return nfa.toString();
-	}
-
-	string dumpAST()
-	{
-		return ast.toString();
+		auto matchResult = matchStart(text);
+		return matchResult.match && matchResult.text.length == text.length;
 	}
 }
+
 
 
 unittest
@@ -96,7 +144,6 @@ unittest
 	assert( testMix.matchExact("babaaa"));
 	assert( testMix.matchExact("babbaaa"));
 	assert( testMix.matchExact("bbbaaa"));
-
 
 	auto testAlphabet = Regex("ab``");
 	assert( testAlphabet.matchExact("ab``"));
