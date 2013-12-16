@@ -7,7 +7,7 @@ alias regex.ast ast;
 alias regex.nfa nfa;
 
 
-/* dispatcher for interace */
+/* dispatcher for interface */
 NFA getNFA(ast.RegexAST rast)
 {
 	alias ast a;
