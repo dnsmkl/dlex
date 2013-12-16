@@ -46,12 +46,14 @@ RegexAST recursiveParse(Par paranthesis = Par.none)(string regexText, ref size_t
 
 			/* repeat 0 or more times */
 			case '*':
+				if(resultAccumulator.length < 1) throw new MissingPreceedingToken(regexText);
 				auto lastIx = resultAccumulator.length-1;
 				resultAccumulator[lastIx] = new ast.Repeat(resultAccumulator[lastIx]);
 			break;
 
 			/* repeat 1 or more times */
 			case '+':
+				if(resultAccumulator.length < 1) throw new MissingPreceedingToken(regexText);
 				auto lastIx = resultAccumulator.length-1;
 				auto last = resultAccumulator[lastIx];
 				resultAccumulator[lastIx] = new ast.Sequence(last, new ast.Repeat(last));
@@ -59,6 +61,7 @@ RegexAST recursiveParse(Par paranthesis = Par.none)(string regexText, ref size_t
 
 			/* repeat specified amount of times */
 			case '{':
+				if(resultAccumulator.length < 1) throw new MissingPreceedingToken(regexText);
 				auto lastIx = resultAccumulator.length-1;
 				auto last = resultAccumulator[lastIx];
 				auto repeatTimes = parseNumberedQuantifier(regexText, currentIndex);
@@ -74,6 +77,7 @@ RegexAST recursiveParse(Par paranthesis = Par.none)(string regexText, ref size_t
 
 			/* optional */
 			case '?':
+				if(resultAccumulator.length < 1) throw new MissingPreceedingToken(regexText);
 				auto lastIx = resultAccumulator.length-1;
 				resultAccumulator[lastIx] = new ast.Optional(resultAccumulator[lastIx]);
 			break;
@@ -249,9 +253,14 @@ unittest
 
 import utils.exception_ctor_mixin;
 class ParsingException : Exception { mixin ExceptionCtorMixin; }
+
 class UnmatchedParanthesis : ParsingException { mixin ExceptionCtorMixin; }
 class UnmatchedBracket : ParsingException { mixin ExceptionCtorMixin; }
 class UnmatchedBrace : ParsingException { mixin ExceptionCtorMixin; }
+
+class MissingPreceedingToken : ParsingException { mixin ExceptionCtorMixin; }
+
+
 
 
 
@@ -316,4 +325,12 @@ unittest
 	assertParseException!UnmatchedBracket("[aa");
 	assertParseException!UnmatchedBrace("a{3");
 	assertParseException!UnmatchedBrace("a3}");
+	assertParseException!MissingPreceedingToken("(+)");
+	assertParseException!MissingPreceedingToken("+");
+	assertParseException!MissingPreceedingToken("(*)");
+	assertParseException!MissingPreceedingToken("*");
+	assertParseException!MissingPreceedingToken("(?)");
+	assertParseException!MissingPreceedingToken("?");
+	assertParseException!MissingPreceedingToken("({1})");
+	assertParseException!MissingPreceedingToken("{1}");
 }
