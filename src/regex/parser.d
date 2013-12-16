@@ -24,7 +24,7 @@ RegexAST recursiveParse(Par paranthesis = Par.none)(string regexText, ref size_t
 {
 	static if(paranthesis == Par.both)
 	{
-		if(regexText[currentIndex] != '(') throw new Exception("Unmatched paranthesis in " ~ regexText);
+		if(regexText[currentIndex] != '(') throw new UnmatchedParanthesis(regexText);
 		++currentIndex;
 	}
 	ast.RegexAST[] resultAccumulator;
@@ -39,7 +39,7 @@ RegexAST recursiveParse(Par paranthesis = Par.none)(string regexText, ref size_t
 
 			/* sequence end */
 			case ')':
-				static if(paranthesis == Par.none) throw new Exception("Unmatched paranthesis in " ~ regexText);
+				static if(paranthesis == Par.none) throw new UnmatchedParanthesis(regexText);
 				static if(paranthesis == Par.right) --currentIndex;
 				return singleNode!(ast.Sequence)(resultAccumulator);
 			break;
@@ -69,7 +69,7 @@ RegexAST recursiveParse(Par paranthesis = Par.none)(string regexText, ref size_t
 			break;
 
 			case '}':
-				throw new Exception("Unmatched curly braces in " ~ regexText);
+				throw new UnmatchedBrace(regexText);
 			break;
 
 			/* optional */
@@ -96,7 +96,7 @@ RegexAST recursiveParse(Par paranthesis = Par.none)(string regexText, ref size_t
 			break;
 
 			case ']':
-				throw new Exception("Unmatched bracket in " ~ regexText);
+				throw new UnmatchedBracket(regexText);
 			break;
 
 			/* simple letter */
@@ -107,7 +107,7 @@ RegexAST recursiveParse(Par paranthesis = Par.none)(string regexText, ref size_t
 	//import std.conv:to;
 	//import std.stdio;
 	//writeln( to!string(currentIndex));
-	static if(paranthesis == Par.both) throw new Exception("Unmatched paranthesis in " ~ regexText);
+	static if(paranthesis == Par.both) throw new UnmatchedParanthesis(regexText);
 	return singleNode!(ast.Sequence)(resultAccumulator);
 }
 
@@ -140,7 +140,7 @@ ast.RegexAST parseCharacterClass(string regexText, ref size_t currentIndex)
 		}
 	}
 	if(currentIndex >= regexText.length
-		|| regexText[currentIndex] != ']') throw new Exception("Unmatched bracket in " ~ regexText);
+		|| regexText[currentIndex] != ']') throw new UnmatchedBracket(regexText);
 	return r;
 }
 unittest
@@ -162,12 +162,12 @@ unittest
 
 size_t parseNumberedQuantifier(string regexText, ref size_t currentIndex)
 {
-	if(regexText[currentIndex] != '{') throw new Exception("Unmatched curly braces in " ~ regexText);
+	if(regexText[currentIndex] != '{') throw new UnmatchedBrace(regexText);
 	++currentIndex;
 
 	auto result = parseInteger(regexText, currentIndex);
 
-	if(regexText[currentIndex] != '}') throw new Exception("Unmatched curly braces in " ~ regexText);
+	if(regexText[currentIndex] != '}') throw new UnmatchedBrace(regexText);
 	++currentIndex;
 
 	return result;
@@ -246,6 +246,13 @@ unittest
 
 
 
+import utils.exception_ctor_mixin;
+class ParsingException : Exception { mixin ExceptionCtorMixin; }
+class UnmatchedParanthesis : ParsingException { mixin ExceptionCtorMixin; }
+class UnmatchedBracket : ParsingException { mixin ExceptionCtorMixin; }
+class UnmatchedBrace : ParsingException { mixin ExceptionCtorMixin; }
+
+
 
 
 
@@ -289,21 +296,21 @@ unittest
 
 
 
-	void assertParseExceptionMsg(string patternString, string expectedMsg)
+	void assertParseException(TException)(string patternString)
 	{
 		try
 		{
 			parse(patternString);
 			assert(0);
 		}
-		catch(Exception e)
+		catch(ParsingException e)
 		{
-			assert(e.msg == expectedMsg);
+			assert(cast(TException) e);
 		}
 	}
 
-	assertParseExceptionMsg("(a+", "Unmatched paranthesis in (a+");
-	assertParseExceptionMsg("a)a", "Unmatched paranthesis in a)a");
-	assertParseExceptionMsg("a]a", "Unmatched bracket in a]a");
-	assertParseExceptionMsg("[aa", "Unmatched bracket in [aa");
+	assertParseException!UnmatchedParanthesis("(a+");
+	assertParseException!UnmatchedParanthesis("a)a");
+	assertParseException!UnmatchedBracket("a]a");
+	assertParseException!UnmatchedBracket("[aa");
 }
