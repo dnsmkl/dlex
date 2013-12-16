@@ -1,4 +1,4 @@
-module regex_implementation.ast;
+module regex.ast;
 
 
 interface RegexAST

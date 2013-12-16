@@ -1,4 +1,4 @@
-module regex_implementation.nfa;
+module regex.nfa;
 
 
 import std.array;

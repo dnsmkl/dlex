@@ -1,4 +1,4 @@
-module regex_implementation.dfa;
+module regex.dfa;
 /* Implement deterministic finite automaton (DFA)
 	DFA is to be used for doing pattern matching */
 

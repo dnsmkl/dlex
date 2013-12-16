@@ -1,8 +1,8 @@
-module regex_implementation.parser;
+module regex.parser;
 
 
-import regex_implementation.ast;
-alias regex_implementation.ast ast;
+import regex.ast;
+alias regex.ast ast;
 
 
 ast.RegexAST parse(string regexText)

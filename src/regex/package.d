@@ -1,11 +1,11 @@
 module regex;
 
-import regex_implementation.parser;
-import regex_implementation.ast;
-import regex_implementation.to_nfa;
-import regex_implementation.nfa;
-import regex_implementation.to_dfa;
-import regex_implementation.dfa;
+import regex.parser;
+import regex.ast;
+import regex.to_nfa;
+import regex.nfa;
+import regex.to_dfa;
+import regex.dfa;
 
 
 alias string Tag;

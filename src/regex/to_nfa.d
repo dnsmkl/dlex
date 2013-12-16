@@ -1,10 +1,10 @@
-module regex_implementation.to_nfa;
+module regex.to_nfa;
 
 
-import regex_implementation.ast;
-import regex_implementation.nfa;
-alias regex_implementation.ast ast;
-alias regex_implementation.nfa nfa;
+import regex.ast;
+import regex.nfa;
+alias regex.ast ast;
+alias regex.nfa nfa;
 
 
 /* dispatcher for interace */
