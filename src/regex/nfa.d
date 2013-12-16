@@ -1,7 +1,10 @@
 module regex.nfa;
 
 
+import utils.exists;
 import std.array;
+
+
 
 /* Nondeterministic finate automaton */
 /* PROPOSAL: it could be split up into NFA & NFALinearStream */
@@ -344,18 +347,4 @@ unittest
 	writeln( "-- NFA - unittest --" );
 	writeln( "--------------------" );
 	writeln( "\n" );
-}
-
-
-
-bool exists(T)(T[] array, T element)
-{
-	foreach(T el; array)
-	{
-		if(el == element)
-		{
-			return true;
-		}
-	}
-	return false;
 }

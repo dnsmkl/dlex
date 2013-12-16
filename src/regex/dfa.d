@@ -3,6 +3,9 @@ module regex.dfa;
 	DFA is to be used for doing pattern matching */
 
 
+import utils.exists;
+
+
 
 /* DFA as Dumb data object.
 	Used internaly in module to pass data between Builder and Mather */
@@ -339,19 +342,4 @@ unittest
 
 	assert( !dfaMatcher_test_minrank.partialMatch("") );
 	assert( dfaMatcher_test_minrank.partialMatch("aba").tag == 0);
-}
-
-
-
-
-bool exists(T)(T[] array, T element)
-{
-	foreach(T el; array)
-	{
-		if(el == element)
-		{
-			return true;
-		}
-	}
-	return false;
 }
