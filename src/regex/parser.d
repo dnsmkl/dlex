@@ -167,7 +167,8 @@ size_t parseNumberedQuantifier(string regexText, ref size_t currentIndex)
 
 	auto result = parseInteger(regexText, currentIndex);
 
-	if(regexText[currentIndex] != '}') throw new UnmatchedBrace(regexText);
+	if(currentIndex >= regexText.length
+		|| regexText[currentIndex] != '}') throw new UnmatchedBrace(regexText);
 	++currentIndex;
 
 	return result;
@@ -313,4 +314,6 @@ unittest
 	assertParseException!UnmatchedParanthesis("a)a");
 	assertParseException!UnmatchedBracket("a]a");
 	assertParseException!UnmatchedBracket("[aa");
+	assertParseException!UnmatchedBrace("a{3");
+	assertParseException!UnmatchedBrace("a3}");
 }
