@@ -253,12 +253,19 @@ unittest
 
 unittest
 {
-	void assertParsedAST(string patternString, string expectedASTsString )
+	void assertParsedAST(
+		string patternString
+		, string expectedASTsString
+		, size_t line = __LINE__
+	)
 	{
-		assert( parse(patternString).toString == expectedASTsString
-			, patternString
-			~ " gives " ~ parse(patternString).toString
-			~ " vs expected " ~ expectedASTsString );
+		import std.conv:to;
+		assert(
+			parse(patternString).toString == expectedASTsString
+			, "\nTest on line(" ~ to!string(line) ~ "): "
+			~ "'" ~ patternString ~ "' parses to " ~ parse(patternString).toString
+			~ " vs expected " ~ expectedASTsString
+		);
 	}
 
 	assertParsedAST("a"     , "L(a)");

@@ -154,12 +154,18 @@ class Letter:RegexAST
 // TODO: Implement RepeatBounded, which can be converted to Optional + lots of copying
 unittest
 {
-	void assertASTString(RegexAST ast, string expectedASTsString )
+	void assertASTString(
+		RegexAST ast
+		, string expectedASTsString
+		, size_t line = __LINE__
+	)
 	{
+		import std.conv:to;
 		assert(
 			ast.toString == expectedASTsString
-			, "ast.toString gives " ~ ast.toString
-				~ " vs expected " ~ expectedASTsString
+			, "\nTest on line(" ~ to!string(line) ~ "): "
+			~ "ast.toString gives " ~ ast.toString
+			~ " vs expected " ~ expectedASTsString
 		);
 	}
 	assertASTString(new Letter('a'), "L(a)");
