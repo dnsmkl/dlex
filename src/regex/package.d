@@ -1,4 +1,7 @@
 module regex;
+/* Connect all the parts of regex pattern matcher
+	regexText -> AST -> NFA -> DFA -> matcher */
+
 
 import regex.parser;
 import regex.ast;
@@ -29,8 +32,7 @@ struct Match
 
 
 
-/* Tagged regex pattern matcher
-	regexText -> NFA -> DFA -> matcher */
+/* Tagged regex pattern matcher */
 struct Regex
 {
 	NFA nfa;
