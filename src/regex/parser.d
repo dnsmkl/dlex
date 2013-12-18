@@ -108,9 +108,6 @@ RegexAST recursiveParse(Par paranthesis = Par.none)(string regexText, ref size_t
 				resultAccumulator ~= new ast.Letter(regexText[currentIndex]);
 		}
 	}
-	//import std.conv:to;
-	//import std.stdio;
-	//writeln( to!string(currentIndex));
 	static if(paranthesis == Par.both) throw new UnmatchedParanthesis(regexText);
 	return singleNode!(ast.Sequence)(resultAccumulator);
 }
