@@ -11,8 +11,8 @@ auto comparingBenchmarkRegex(string pattern, string text)
 		assert(std.regex.match(text,regexBase),text);
 	}
 
-	static import regex;
-	auto regexTarget = regex.Regex(pattern);
+	static import dlex.regex;
+	auto regexTarget = dlex.regex.Regex(pattern);
 	void target()
 	{
 		assert(regexTarget.matchExact(text),text);

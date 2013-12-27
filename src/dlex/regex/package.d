@@ -1,14 +1,14 @@
-module regex;
+module dlex.regex;
 /* Connect all the parts of regex pattern matcher
 	regexText -> AST -> NFA -> DFA -> matcher */
 
 
-import regex.parser;
-import regex.ast;
-import regex.to_nfa;
-import regex.nfa;
-import regex.to_dfa;
-import regex.dfa;
+import dlex.regex.parser;
+import dlex.regex.ast;
+import dlex.regex.to_nfa;
+import dlex.regex.nfa;
+import dlex.regex.to_dfa;
+import dlex.regex.dfa;
 
 
 alias string Tag;

@@ -1,8 +1,8 @@
-module regex.parser;
+module dlex.regex.parser;
 
 
-import regex.ast;
-alias regex.ast ast;
+import dlex.regex.ast;
+alias dlex.regex.ast ast;
 
 
 ast.RegexAST parse(string regexText)

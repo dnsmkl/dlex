@@ -1,8 +1,9 @@
-module lexer;
+module dlex;
+
 
 
 import std.array:empty;
-import regex;
+import dlex.regex;
 
 
 

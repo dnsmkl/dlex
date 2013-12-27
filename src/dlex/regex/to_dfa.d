@@ -1,8 +1,8 @@
-module regex.to_dfa;
+module dlex.regex.to_dfa;
 
 
-import regex.nfa;
-import regex.dfa;
+import dlex.regex.nfa;
+import dlex.regex.dfa;
 
 
 import std.array:empty;

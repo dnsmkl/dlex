@@ -1,4 +1,4 @@
-module regex.nfa;
+module dlex.regex.nfa;
 
 
 import utils.exists;

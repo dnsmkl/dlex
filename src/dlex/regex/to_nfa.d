@@ -1,10 +1,10 @@
-module regex.to_nfa;
+module dlex.regex.to_nfa;
 
 
-import regex.ast;
-import regex.nfa;
-alias regex.ast ast;
-alias regex.nfa nfa;
+import dlex.regex.ast;
+import dlex.regex.nfa;
+alias dlex.regex.ast ast;
+alias dlex.regex.nfa nfa;
 
 
 /* dispatcher for interface */

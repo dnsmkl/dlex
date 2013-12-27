@@ -1,4 +1,4 @@
-module regex.dfa;
+module dlex.regex.dfa;
 /* Implement deterministic finite automaton (DFA)
 	DFA is to be used for doing pattern matching */
 
@@ -8,7 +8,7 @@ import utils.exists;
 
 
 /* DFA as Dumb data object.
-	Used internaly in module to pass data between Builder and Mather */
+	Used internaly in module dlex.to pass data between Builder and Mather */
 private
 struct DFA(
 	TStateId = size_t

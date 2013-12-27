@@ -1,4 +1,4 @@
-module regex.ast;
+module dlex.regex.ast;
 
 
 interface RegexAST
