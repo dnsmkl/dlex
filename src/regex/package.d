@@ -37,6 +37,8 @@ struct Regex
 {
 	NFA nfa;
 	uint rank = 0;
+	alias typeof(toDfa(this.nfa)) Matcher;
+	Matcher matcher;
 
 
 	this(string regexPattern)
@@ -60,20 +62,20 @@ struct Regex
 		{
 			nfa.addUnion(newNFA);
 		}
+		this.matcher = toDfa(this.nfa);
 	}
 
 
 	Match matchStart(string text)
 	{
-		auto dfa = toDfa(this.nfa);
-		auto dfaMatch = dfa.partialMatch(text);
+		auto dfaMatch = this.matcher.partialMatch(text);
 
 		auto r = Match();
 		r.match = dfaMatch.match;
 		if(r.match)
 		{
 			r.tag = dfaMatch.tag;
-			r.text = text[0 .. dfa.partialMatch(text).count];
+			r.text = text[0 .. dfaMatch.count];
 		}
 		return r;
 	}
