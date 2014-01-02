@@ -48,15 +48,14 @@ class Sequence:RegexAST
 	override
 	string toString()
 	{
-		import std.array:join;
-		import std.algorithm:map;
-		return "Seq["
-			~ join
-			(
-				map!"a.toString()"(sequenceOfRegexASTs)
-				,","
-			)
-			~ "]";
+		// if join+map are used, to string is called twice for same element (blows up in case of nesting)
+		string r;
+		foreach(k,v; sequenceOfRegexASTs)
+		{
+			if(k!=0) r ~= ",";
+			r ~= v.toString();
+		}
+		return "Seq[" ~ r ~ "]";
 	}
 }
 
@@ -75,11 +74,8 @@ class Or:RegexAST
 	override
 	string toString()
 	{
-		import std.array;
-		import std.algorithm;
-		return "Or{"
-			~ join(map!"a.toString()"(regexASTs),"|")
-			~ "}";
+		// if join+map are used, to string is called twice for same element (blows up in case of nesting)
+		return "Or{" ~ regexASTs[0].toString() ~ "|" ~ regexASTs[1].toString() ~ "}";
 	}
 }
 
