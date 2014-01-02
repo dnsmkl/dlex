@@ -66,8 +66,16 @@ class Or:RegexAST
 	RegexAST[] regexASTs;
 	this(RegexAST regexAST1, RegexAST regexAST2)
 	{
-		this.regexASTs ~= regexAST1;
-		this.regexASTs ~= regexAST2;
+		if(cast(Or)regexAST1) regexASTs ~= (cast(Or)regexAST1).regexASTs;
+		else this.regexASTs ~= regexAST1;
+		if(cast(Or)regexAST2) regexASTs ~= (cast(Or)regexAST2).regexASTs;
+		else this.regexASTs ~= regexAST2;
+	}
+
+
+	this(RegexAST[] regexASTs)
+	{
+		this.regexASTs = regexASTs;
 	}
 
 
@@ -75,7 +83,13 @@ class Or:RegexAST
 	string toString()
 	{
 		// if join+map are used, to string is called twice for same element (blows up in case of nesting)
-		return "Or{" ~ regexASTs[0].toString() ~ "|" ~ regexASTs[1].toString() ~ "}";
+		string r;
+		foreach(k,v; regexASTs)
+		{
+			if(k!=0) r ~= "|";
+			r ~= v.toString();
+		}
+		return "Or{" ~ r ~ "}";
 	}
 }
 
@@ -143,7 +157,36 @@ class Letter:RegexAST
 	override pure nothrow @safe
 	string toString()
 	{
-		return "L("~ letter ~")";
+		if(letter>= 0x20 &&  letter < 0x7F)
+			return "L("~ letter ~")"; //ascii letter
+		else
+			return "L("~ hex(letter) ~")"; // non-ascii letter
+	}
+
+	@safe nothrow pure private static
+	string hex(char c)
+	{
+		char lowerBits = (c & 0x0F);
+		char higherBits = (c >> 4);
+		return "0x"~ hexDigit(higherBits) ~ hexDigit(lowerBits);
+	}
+
+	@safe nothrow pure private static
+	string hexDigit(char lowerBits)
+	{
+		assert(lowerBits <= 0x0F);
+		if(lowerBits < 10)
+			lowerBits += '0';
+		else
+			lowerBits += 'A' - 10;
+		return ""~lowerBits;
+	}
+	unittest
+	{
+		assert(hex(0x00) == "0x00");
+		assert(hex(0x0d) == "0x0D");
+		assert(hex(0x10) == "0x10");
+		assert(hex(0xAD) == "0xAD");
 	}
 }
 
@@ -172,7 +215,7 @@ unittest
 
 	assertASTString(new Optional(new Optional(new Letter('a'))), "Opt(L(a))");
 	assertASTString(new Repeat(new Repeat(new Letter('a'))), "Rep(L(a))");
-	assertASTString(new Or(new Or(new Letter('a'),new Letter('b')),new Letter('c')), "Or{Or{L(a)|L(b)}|L(c)}");
+	assertASTString(new Or(new Or(new Letter('a'),new Letter('b')),new Letter('c')), "Or{L(a)|L(b)|L(c)}");
 	assertASTString(
 		new Sequence(
 			new Sequence(new Letter('a'),new Letter('b'))
