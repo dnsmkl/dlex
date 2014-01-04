@@ -45,17 +45,16 @@ class Sequence:RegexAST
 	}
 
 
+	// Dmd bug prevents moving imports inside of method body
+	// http://d.puremagic.com/issues/show_bug.cgi?id=7016
+	import nostd.array:join;
+	import nostd.algorithm:map;
 	override
 	string toString()
 	{
-		// if join+map are used, to string is called twice for same element (blows up in case of nesting)
-		string r;
-		foreach(k,v; sequenceOfRegexASTs)
-		{
-			if(k!=0) r ~= ",";
-			r ~= v.toString();
-		}
-		return "Seq[" ~ r ~ "]";
+		// if join+map from stdlib are used
+		// then to string is called twice for same element (blows up in case of nesting)
+		return "Seq[" ~ map!"a.toString"(sequenceOfRegexASTs).join(",") ~ "]";
 	}
 }
 
@@ -79,17 +78,16 @@ class Or:RegexAST
 	}
 
 
+	// Dmd bug prevents moving imports inside of method body
+	// http://d.puremagic.com/issues/show_bug.cgi?id=7016
+	import nostd.array:join;
+	import nostd.algorithm:map;
 	override
 	string toString()
 	{
-		// if join+map are used, to string is called twice for same element (blows up in case of nesting)
-		string r;
-		foreach(k,v; regexASTs)
-		{
-			if(k!=0) r ~= "|";
-			r ~= v.toString();
-		}
-		return "Or{" ~ r ~ "}";
+		// if join+map from stdlib are used
+		// then to string is called twice for same element (blows up in case of nesting)
+		return "Or{" ~ map!"a.toString"(regexASTs).join("|") ~ "}";
 	}
 }
 
