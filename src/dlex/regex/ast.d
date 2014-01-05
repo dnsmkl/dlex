@@ -7,143 +7,116 @@ interface RegexAST
 }
 
 
-/* e.g. "abc" */
-class Sequence:RegexAST
+// Base class for regex AST node (with single direct child node)
+class SingleChild
+{
+	RegexAST regexAST;
+
+
+	protected template ctorMixin()
+	{
+		this(RegexAST regexAST)
+		{
+			if(cast(typeof(this)) regexAST)
+				this.regexAST = (cast(typeof(this)) regexAST).regexAST;
+			else
+				this.regexAST = regexAST;
+		}
+	}
+
+
+	protected template toStringMixin(string d1, string d2)
+	{
+		override final
+		string toString()
+		{
+			return d1 ~ regexAST.toString() ~ d2;
+		}
+	}
+}
+
+
+// Base class for regex AST node (with many direct children nodes)
+class ManyChildren
 {
 	RegexAST[] regexASTs;
 
 
-	this(RegexAST[] regexASTs)
+	protected template ctorMixin()
 	{
-		this.regexASTs = regexASTs;
-	}
-
-	this(RegexAST regexAST1, RegexAST regexAST2)
-	{
-		// Try to flaten resulting ast
-		// e.g. instead of Seq[Seq[a,b],Seq[c,d]], make Seq[a,b,c,d]
-		if(cast(Sequence) regexAST1)
+		this(RegexAST[] _regexASTs)
 		{
-			this.regexASTs ~= (cast(Sequence) regexAST1).regexASTs;
-		}
-		else
-		{
-			this.regexASTs ~= regexAST1;
+			regexASTs = _regexASTs;
 		}
 
-		if(cast(Sequence) regexAST2)
+
+		this(RegexAST regexAST1, RegexAST regexAST2)
 		{
-			foreach(ast; (cast(Sequence) regexAST2).regexASTs)
-			{
-				this.regexASTs ~= ast;
-			}
-		}
-		else
-		{
-			this.regexASTs ~= regexAST2;
+			// Flaten result: instead of Xy[Xy[a,b],Xy[c,d]], make Xy[a,b,c,d]
+			if(cast(typeof(this)) regexAST1)
+				this.regexASTs ~= (cast(typeof(this)) regexAST1).regexASTs;
+			else
+				this.regexASTs ~= regexAST1;
+
+			if(cast(typeof(this)) regexAST2)
+				foreach(ast; (cast(typeof(this)) regexAST2).regexASTs)
+					this.regexASTs ~= ast;
+			else
+				this.regexASTs ~= regexAST2;
 		}
 	}
 
 
-	// Dmd bug prevents moving imports inside of method body
+	// DMD bug 7016 prevents moving imports inside of method body
 	// http://d.puremagic.com/issues/show_bug.cgi?id=7016
+	// If std join+map is used - toString is called twice for same element (bad in case of nesting)
 	import nostd.array:join;
 	import nostd.algorithm:map;
-	override
-	string toString()
+	protected template toStringMixin(string d1, string separator,  string d2)
 	{
-		// if join+map from stdlib are used
-		// then to string is called twice for same element (blows up in case of nesting)
-		return "Seq[" ~ map!"a.toString"(regexASTs).join(",") ~ "]";
+		override final
+		string toString()
+		{
+			return d1 ~ map!"a.toString"(regexASTs).join(separator) ~ d2;
+		}
 	}
+}
+
+
+/* e.g. "abc" */
+class Sequence: ManyChildren, RegexAST
+{
+	mixin ManyChildren.ctorMixin;
+	mixin ManyChildren.toStringMixin!("Seq[", ",", "]");
 }
 
 
 /* e.g. "a|b" */
-class Or:RegexAST
+class Or: ManyChildren, RegexAST
 {
-	RegexAST[] regexASTs;
-	this(RegexAST regexAST1, RegexAST regexAST2)
-	{
-		if(cast(Or)regexAST1) regexASTs ~= (cast(Or)regexAST1).regexASTs;
-		else this.regexASTs ~= regexAST1;
-		if(cast(Or)regexAST2) regexASTs ~= (cast(Or)regexAST2).regexASTs;
-		else this.regexASTs ~= regexAST2;
-	}
-
-
-	this(RegexAST[] regexASTs)
-	{
-		this.regexASTs = regexASTs;
-	}
-
-
-	// Dmd bug prevents moving imports inside of method body
-	// http://d.puremagic.com/issues/show_bug.cgi?id=7016
-	import nostd.array:join;
-	import nostd.algorithm:map;
-	override
-	string toString()
-	{
-		// if join+map from stdlib are used
-		// then to string is called twice for same element (blows up in case of nesting)
-		return "Or{" ~ map!"a.toString"(regexASTs).join("|") ~ "}";
-	}
+	mixin ManyChildren.ctorMixin;
+	mixin ManyChildren.toStringMixin!("Or{", "|", "}");
 }
 
 
 /* e.g. "a*" */
-class Repeat:RegexAST
+class Repeat: SingleChild, RegexAST
 {
-	RegexAST regexAST;
-	this(RegexAST regexAST)
-	{
-		if(cast(Repeat) regexAST)
-		{
-			this.regexAST = (cast(Repeat) regexAST).regexAST;
-		}
-		else
-		{
-			this.regexAST = regexAST;
-		}
-	}
-
-
-	override
-	string toString()
-	{
-		return "Rep("~ regexAST.toString() ~")";
-	}
+	mixin SingleChild.ctorMixin;
+	mixin SingleChild.toStringMixin!("Rep(", ")");
 }
 
 
 /* e.g. "a?" */
-class Optional:RegexAST
+class Optional: SingleChild, RegexAST
 {
-	RegexAST regexAST;
-	this(RegexAST regexAST)
-	{
-		if(cast(Optional) regexAST)
-		{
-			this.regexAST = (cast(Optional) regexAST).regexAST;
-		}
-		else
-		{
-			this.regexAST = regexAST;
-		}
-	}
-
-
-	override
-	string toString()
-	{
-		return "Opt("~ regexAST.toString() ~")";
-	}
+	mixin SingleChild.ctorMixin;
+	mixin SingleChild.toStringMixin!("Opt(", ")");
 }
 
 
 /* e.g. "a" */
-class Letter:RegexAST
+class Letter: RegexAST
 {
 	char letter;
 	this(char letter)
