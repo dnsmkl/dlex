@@ -152,39 +152,14 @@ class Letter:RegexAST
 	}
 
 
+	static import utils.str_format;
 	override pure nothrow @safe
 	string toString()
 	{
 		if(letter>= 0x20 &&  letter < 0x7F)
 			return "L("~ letter ~")"; //ascii letter
 		else
-			return "L("~ hex(letter) ~")"; // non-ascii letter
-	}
-
-	@safe nothrow pure private static
-	string hex(char c)
-	{
-		char lowerBits = (c & 0x0F);
-		char higherBits = (c >> 4);
-		return "0x"~ hexDigit(higherBits) ~ hexDigit(lowerBits);
-	}
-
-	@safe nothrow pure private static
-	string hexDigit(char lowerBits)
-	{
-		assert(lowerBits <= 0x0F);
-		if(lowerBits < 10)
-			lowerBits += '0';
-		else
-			lowerBits += 'A' - 10;
-		return ""~lowerBits;
-	}
-	unittest
-	{
-		assert(hex(0x00) == "0x00");
-		assert(hex(0x0d) == "0x0D");
-		assert(hex(0x10) == "0x10");
-		assert(hex(0xAD) == "0xAD");
+			return "L("~ utils.str_format.hex(letter) ~")"; // non-ascii letter
 	}
 }
 
