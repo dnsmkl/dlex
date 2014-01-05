@@ -36,7 +36,8 @@ auto toDfa(NFA nfa)
 						newBatchOfStartingPoints ~= reachableStates;
 					}
 					transferEndsIfNeeded(reachableStates, nfa.ends, dfaBuilder);
-					dfaBuilder.addTransition(searchFromNFAStateSet, c, reachableStates);
+					auto allTranLazy = allTransitionsLazy(nfa.transitionLaziness, searchFromNFAStateSet, c, reachableStates);
+					dfaBuilder.addTransition(searchFromNFAStateSet, c, reachableStates, allTranLazy);
 				}
 
 				if(c==char.max) break;
@@ -46,6 +47,22 @@ auto toDfa(NFA nfa)
 	}
 
 	return dfaBuilder.makeMatcher();
+}
+
+bool allTransitionsLazy(bool[NFA.StateId][NFA.AlphaElement][NFA.StateId] transitionLaziness
+		,NFA.StateId[] sourceNFA, NFA.AlphaElement letter, NFA.StateId[] targetNFA)
+{
+	foreach(nfaSourceState; sourceNFA)
+	{
+		foreach(nfaTargetState; targetNFA)
+		{
+			if(nfaSourceState !in transitionLaziness) continue;
+			if(letter !in transitionLaziness[nfaSourceState]) continue;
+			assert(nfaTargetState in transitionLaziness[nfaSourceState][letter]);
+			if(transitionLaziness[nfaSourceState][letter][nfaTargetState] == false) return false;
+		}
+	}
+	return true;
 }
 
 void transferEndsIfNeeded(NFA.StateId[] reachableStates, NFA.TaggedEnd[] nfaEnds, ref Builder!(NFA.StateId) dfa )
@@ -158,4 +175,30 @@ unittest
 
 	assert( dfaTestSetEndTag.partialMatch("aba"));
 	assert( dfaTestSetEndTag.partialMatch("aba").tag == "testSetEndTag");
+}
+
+
+unittest
+{
+	/* Test laziness */
+	auto testNFA(bool laziness)
+	{
+		auto nfa = NFA(['a']);
+		nfa.addUnion(NFA(['b']));
+
+		// only following line depends on function paramter
+		nfa.makeRepeat(laziness); //[ab]+?
+		nfa.makeOptional();
+
+		auto m = NFA(['b']);
+		m.makeRepeat(); // b+
+		nfa.append(m); // ([ab]*?)(b+)
+		return nfa;
+	}
+
+	auto lazyDFA = toDfa(testNFA(true));
+	assert(lazyDFA.partialMatch("aabbbaabb").count == 5);
+
+	auto greedyDFA = toDfa(testNFA(false));
+	assert(greedyDFA.partialMatch("aabbbaabb").count == 9);
 }

@@ -41,15 +41,15 @@ NFA getNFA(ast.Sequence rasts)
 NFA getNFA(ast.Optional rast)
 {
 	auto r = getNFA( rast.regexAST );
-	r.makeOptional();
+	r.makeOptional(rast.laziness);
 	return r;
 }
 
 NFA getNFA(ast.Repeat rast)
 {
 	auto r = getNFA( rast.regexAST );
-	r.makeRepeat();
-	r.makeOptional();
+	r.makeRepeat(rast.laziness);
+	r.makeOptional(rast.laziness);
 	return r;
 }
 

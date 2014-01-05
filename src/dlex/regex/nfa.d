@@ -18,6 +18,8 @@ struct NFA
 	alias string Tag;
 
 	StateId[][AlphaElement][StateId] transitions;
+	bool[StateId][AlphaElement][StateId] transitionLaziness;
+
 	struct TaggedEnd{ StateId stateId; Tag tag; uint rank; }
 	//StateId[] ends;
 	TaggedEnd[] ends;
@@ -67,16 +69,19 @@ struct NFA
 	}
 
 
-	void makeOptional()
+	void makeOptional(bool laziness = false)
 	{
 		/* mark each start as end */
 		foreach(start;starts)
 		{
 			markAsEnd(start);
+			foreach(bool[StateId] targetLaziness; transitionLaziness[start])
+				foreach(bool l; targetLaziness) l = laziness;
+
 		}
 	}
 
-	void makeRepeat()
+	void makeRepeat(bool laziness = false)
 	{
 		/* Make ends point to targets of starts */
 		foreach(end; ends)
@@ -88,6 +93,7 @@ struct NFA
 					foreach(target; targets)
 					{
 						addTransitionToExisting(end.stateId, letter, target);
+						transitionLaziness[end.stateId][letter][target] = laziness;
 					}
 				}
 			}
@@ -142,7 +148,8 @@ struct NFA
 				{
 					foreach(otherTargetStateId; otherTargets)
 					{
-						addTransitionToExisting(otherFromStateId+incrementNeeded, otherLetter, otherTargetStateId+incrementNeeded);
+						addTransitionToExisting(otherFromStateId+incrementNeeded, otherLetter, otherTargetStateId+incrementNeeded
+							,other.transitionLaziness[otherFromStateId][otherLetter][otherTargetStateId]);
 					}
 				}
 			}
@@ -245,20 +252,24 @@ struct NFA
 
 
 	private
-	StateId addTransitionToNew(StateId fromState, AlphaElement alpha)
+	StateId addTransitionToNew(StateId fromState, AlphaElement alpha
+			, bool laziness = false)
 	{
 		auto newState = getNewState();
 		if( !(fromState in transitions) )
 		{
 			transitions[fromState] = [alpha:[newState]];
+			transitionLaziness[fromState][alpha][newState] = laziness;
 		}
 		else if( !(alpha in transitions[fromState]) )
 		{
 			transitions[fromState][alpha] = [newState];
+			transitionLaziness[fromState][alpha][newState] = laziness;
 		}
 		else
 		{
 			transitions[fromState][alpha] ~= newState;
+			transitionLaziness[fromState][alpha][newState] = laziness;
 		}
 
 		_state_used_recently_as_transition_target = newState;
@@ -267,19 +278,23 @@ struct NFA
 
 
 	private
-	void addTransitionToExisting(StateId fromState, AlphaElement alpha, StateId toState)
+	void addTransitionToExisting(StateId fromState, AlphaElement alpha, StateId toState
+			, bool laziness = false)
 	{
 		if( !(fromState in transitions) )
 		{
 			transitions[fromState] = [alpha:[toState]];
+			transitionLaziness[fromState][alpha][toState] = laziness;
 		}
 		else if( !(alpha in transitions[fromState]) )
 		{
 			transitions[fromState][alpha] = [toState];
+			transitionLaziness[fromState][alpha][toState] = laziness;
 		}
 		else
 		{
 			transitions[fromState][alpha] ~= toState;
+			transitionLaziness[fromState][alpha][toState] = laziness;
 		}
 
 		_state_used_recently_as_transition_target = toState;
@@ -307,18 +322,39 @@ struct NFA
 			{
 				foreach(AlphaElement letter, StateId[] targets; transitions[stateId])
 				{
-					r ~= "\t"
-						~ to!string(stateId)
-						~ " | "
-						~ letter
-						~ " -> "
-						~ to!string(targets)
-						~ "\n";
+					foreach(target; targets)
+					{
+						r ~= "\t"
+							~ to!string(stateId)
+							~ " | "
+							~ letter
+							~ (transitionLaziness[stateId][letter][target] ? " -?" : " ")
+							~ "-> "
+							~ to!string(target)
+							~ "\n";
+					}
 				}
 			}
 		}
 		return r[0 .. r.length-1];
 	}
+}
+
+
+version(none)
+unittest
+{
+	auto n = NFA(['a']);
+	n.addUnion(NFA(['b'])); //[ab]
+	n.makeRepeat(true); //[ab]+?
+
+	auto m = NFA(['b']);
+	m.makeRepeat(); // b+
+
+	n.append(m) ; // ([ab]+?)(b+)
+
+	import std.stdio;
+	writeln( n );
 }
 
 

@@ -11,9 +11,10 @@ interface RegexAST
 class SingleChild
 {
 	RegexAST regexAST;
+	bool laziness;
 
 
-	protected template ctorMixin()
+	protected template ctorMixin(T = void)
 	{
 		this(RegexAST regexAST)
 		{
@@ -21,6 +22,13 @@ class SingleChild
 				this.regexAST = (cast(typeof(this)) regexAST).regexAST;
 			else
 				this.regexAST = regexAST;
+		}
+
+
+		this(RegexAST regexAST, bool laziness)
+		{
+			this(regexAST);
+			this.laziness = laziness;
 		}
 	}
 
@@ -30,7 +38,7 @@ class SingleChild
 		override final
 		string toString()
 		{
-			return d1 ~ regexAST.toString() ~ d2;
+			return d1 ~ (laziness?"?":"") ~ regexAST.toString() ~ d2;
 		}
 	}
 }
@@ -156,6 +164,8 @@ unittest
 	assertASTString(new Letter('a'), "L(a)");
 	assertASTString(new Optional(new Letter('a')), "Opt(L(a))");
 	assertASTString(new Repeat(new Letter('a')), "Rep(L(a))");
+	assertASTString(new Optional(new Letter('a'), true), "Opt(?L(a))");
+	assertASTString(new Repeat(new Letter('a'), true), "Rep(?L(a))");
 	assertASTString(new Or(new Letter('a'),new Letter('b')), "Or{L(a)|L(b)}");
 	assertASTString(new Sequence(new Letter('a'),new Letter('b')), "Seq[L(a),L(b)]");
 
@@ -169,4 +179,8 @@ unittest
 		)
 		, "Seq[L(a),L(b),L(c),L(d)]"
 	);
+
+	// ensure that it is greedy by default
+	auto x = new Repeat(new Letter('a'));
+	assert(x.laziness == false);
 }

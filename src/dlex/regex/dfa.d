@@ -119,6 +119,18 @@ struct Builder(
 	DFA dfa;
 
 
+	private
+	bool isEnd(StateIdNFA[] nfaStates)
+	{
+		auto inStateId = states.getStateId(nfaStates);
+		foreach(end; dfa.ends)
+		{
+			if(end.stateId == inStateId) return true;
+		}
+		return false;
+	}
+
+
 	// Building part
 	public:
 	bool isStateNew(StateIdNFA[] nfaStates)
@@ -126,13 +138,15 @@ struct Builder(
 		return states.isStateNew(nfaStates);
 	}
 
-	void addTransition(StateIdNFA[] sourceNFA, AlphaElement letter, StateIdNFA[] targetNFA)
+	void addTransition(StateIdNFA[] sourceNFA, AlphaElement letter, StateIdNFA[] targetNFA
+		, bool lazyTransition = false)
 	{
 		states.addState(sourceNFA);
 		states.addState(targetNFA);
 		StateId source = states.getStateId(sourceNFA);
 		StateId target = states.getStateId(targetNFA);
-		this.dfa.transitions[source][letter] = target;
+		bool lazyFromEnd = lazyTransition && isEnd(sourceNFA);
+		if(!lazyFromEnd) this.dfa.transitions[source][letter] = target;
 	}
 
 	void markStart(StateIdNFA[] state)

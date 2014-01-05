@@ -49,7 +49,16 @@ RegexAST recursiveParse(Par paranthesis = Par.none)(string regexText, ref size_t
 			case '*':
 				if(resultAccumulator.length < 1) throw new MissingPreceedingToken(regexText);
 				auto lastIx = resultAccumulator.length-1;
-				resultAccumulator[lastIx] = new ast.Repeat(resultAccumulator[lastIx]);
+
+				bool laziness;
+				if((currentIndex+1)<regexText.length && regexText[currentIndex+1]=='?')
+				{
+					++currentIndex; // eat the question mark
+					laziness = true;
+				}
+				else laziness = false;
+
+				resultAccumulator[lastIx] = new ast.Repeat(resultAccumulator[lastIx], laziness);
 			break;
 
 			/* repeat 1 or more times */
@@ -57,7 +66,16 @@ RegexAST recursiveParse(Par paranthesis = Par.none)(string regexText, ref size_t
 				if(resultAccumulator.length < 1) throw new MissingPreceedingToken(regexText);
 				auto lastIx = resultAccumulator.length-1;
 				auto last = resultAccumulator[lastIx];
-				resultAccumulator[lastIx] = new ast.Sequence(last, new ast.Repeat(last));
+
+				bool laziness;
+				if((currentIndex+1)<regexText.length && regexText[currentIndex+1]=='?')
+				{
+					++currentIndex; // eat the question mark
+					laziness = true;
+				}
+				else laziness = false;
+
+				resultAccumulator[lastIx] = new ast.Sequence(last, new ast.Repeat(last, laziness));
 			break;
 
 			/* repeat specified amount of times */
@@ -80,7 +98,16 @@ RegexAST recursiveParse(Par paranthesis = Par.none)(string regexText, ref size_t
 			case '?':
 				if(resultAccumulator.length < 1) throw new MissingPreceedingToken(regexText);
 				auto lastIx = resultAccumulator.length-1;
-				resultAccumulator[lastIx] = new ast.Optional(resultAccumulator[lastIx]);
+
+				bool laziness;
+				if((currentIndex+1)<regexText.length && regexText[currentIndex+1]=='?')
+				{
+					++currentIndex; // eat the question mark
+					laziness = true;
+				}
+				else laziness = false;
+
+				resultAccumulator[lastIx] = new ast.Optional(resultAccumulator[lastIx], laziness);
 			break;
 
 			/* alteration */
@@ -294,6 +321,7 @@ unittest
 	assertParsedAST("(a)"   , "L(a)");
 	assertParsedAST("(a|b)" , "Or{L(a)|L(b)}");
 	assertParsedAST("a**"   , "Rep(L(a))");
+	assertParsedAST("a*?"   , "Rep(?L(a))");
 	assertParsedAST("ab"    , "Seq[L(a),L(b)]");
 	assertParsedAST("abc"   , "Seq[L(a),L(b),L(c)]");
 	assertParsedAST("ab*"   , "Seq[L(a),Rep(L(b))]");
@@ -305,6 +333,7 @@ unittest
 	assertParsedAST("a?"    , "Opt(L(a))");
 	assertParsedAST("(ab)?" , "Opt(Seq[L(a),L(b)])");
 	assertParsedAST("a+"    , "Seq[L(a),Rep(L(a))]");
+	assertParsedAST("a+?"    , "Seq[L(a),Rep(?L(a))]");
 	assertParsedAST("[ab]a" , "Seq[Or{L(a)|L(b)},L(a)]");
 	assertParsedAST("a{2}"  , "Seq[L(a),L(a)]");
 	assertParsedAST("a{3}"  , "Seq[L(a),L(a),L(a)]");

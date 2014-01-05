@@ -151,4 +151,18 @@ unittest
 
 	auto testAlphabet = Regex("ab``");
 	assert( testAlphabet.matchExact("ab``"));
+
+
+	auto testLazyPlus = Regex("[ab]+?b+");
+	assert( testLazyPlus.matchStart("aabbbabb").text == "aabbb");
+
+	// following tests just document bad behaviour
+	auto testLazyStar2 = Regex("a*?");
+	assert( testLazyStar2.matchStart("aaaa").text == "a");
+
+	auto testLonelyLazyPlus = Regex("a+?");
+	assert( testLonelyLazyPlus.matchStart("aaa").text == "aa");
+
+	auto testLazyQmark = Regex("a??");
+	assert( testLazyQmark.matchStart("aaa").text == "a");
 }
