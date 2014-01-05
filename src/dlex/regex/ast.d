@@ -164,7 +164,6 @@ class Letter:RegexAST
 }
 
 
-// TODO: Implement RepeatBounded, which can be converted to Optional + lots of copying
 unittest
 {
 	void assertASTString(
