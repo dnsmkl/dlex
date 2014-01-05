@@ -10,12 +10,12 @@ interface RegexAST
 /* e.g. "abc" */
 class Sequence:RegexAST
 {
-	RegexAST[] sequenceOfRegexASTs;
+	RegexAST[] regexASTs;
 
 
-	this(RegexAST[] sequenceOfRegexASTs)
+	this(RegexAST[] regexASTs)
 	{
-		this.sequenceOfRegexASTs = sequenceOfRegexASTs;
+		this.regexASTs = regexASTs;
 	}
 
 	this(RegexAST regexAST1, RegexAST regexAST2)
@@ -24,23 +24,23 @@ class Sequence:RegexAST
 		// e.g. instead of Seq[Seq[a,b],Seq[c,d]], make Seq[a,b,c,d]
 		if(cast(Sequence) regexAST1)
 		{
-			this.sequenceOfRegexASTs ~= (cast(Sequence) regexAST1).sequenceOfRegexASTs;
+			this.regexASTs ~= (cast(Sequence) regexAST1).regexASTs;
 		}
 		else
 		{
-			this.sequenceOfRegexASTs ~= regexAST1;
+			this.regexASTs ~= regexAST1;
 		}
 
 		if(cast(Sequence) regexAST2)
 		{
-			foreach(ast; (cast(Sequence) regexAST2).sequenceOfRegexASTs)
+			foreach(ast; (cast(Sequence) regexAST2).regexASTs)
 			{
-				this.sequenceOfRegexASTs ~= ast;
+				this.regexASTs ~= ast;
 			}
 		}
 		else
 		{
-			this.sequenceOfRegexASTs ~= regexAST2;
+			this.regexASTs ~= regexAST2;
 		}
 	}
 
@@ -54,7 +54,7 @@ class Sequence:RegexAST
 	{
 		// if join+map from stdlib are used
 		// then to string is called twice for same element (blows up in case of nesting)
-		return "Seq[" ~ map!"a.toString"(sequenceOfRegexASTs).join(",") ~ "]";
+		return "Seq[" ~ map!"a.toString"(regexASTs).join(",") ~ "]";
 	}
 }
 
@@ -95,16 +95,16 @@ class Or:RegexAST
 /* e.g. "a*" */
 class Repeat:RegexAST
 {
-	RegexAST repeatableRegexAST;
-	this(RegexAST repeatableRegexAST)
+	RegexAST regexAST;
+	this(RegexAST regexAST)
 	{
-		if(cast(Repeat) repeatableRegexAST)
+		if(cast(Repeat) regexAST)
 		{
-			this.repeatableRegexAST = (cast(Repeat) repeatableRegexAST).repeatableRegexAST;
+			this.regexAST = (cast(Repeat) regexAST).regexAST;
 		}
 		else
 		{
-			this.repeatableRegexAST = repeatableRegexAST;
+			this.regexAST = regexAST;
 		}
 	}
 
@@ -112,7 +112,7 @@ class Repeat:RegexAST
 	override
 	string toString()
 	{
-		return "Rep("~ repeatableRegexAST.toString() ~")";
+		return "Rep("~ regexAST.toString() ~")";
 	}
 }
 
@@ -120,16 +120,16 @@ class Repeat:RegexAST
 /* e.g. "a?" */
 class Optional:RegexAST
 {
-	RegexAST optionalRegexAST;
-	this(RegexAST optionalRegexAST)
+	RegexAST regexAST;
+	this(RegexAST regexAST)
 	{
-		if(cast(Optional) optionalRegexAST)
+		if(cast(Optional) regexAST)
 		{
-			this.optionalRegexAST = (cast(Optional) optionalRegexAST).optionalRegexAST;
+			this.regexAST = (cast(Optional) regexAST).regexAST;
 		}
 		else
 		{
-			this.optionalRegexAST = optionalRegexAST;
+			this.regexAST = regexAST;
 		}
 	}
 
@@ -137,7 +137,7 @@ class Optional:RegexAST
 	override
 	string toString()
 	{
-		return "Opt("~ optionalRegexAST.toString() ~")";
+		return "Opt("~ regexAST.toString() ~")";
 	}
 }
 

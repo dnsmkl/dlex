@@ -31,7 +31,7 @@ NFA getNFA(ast.Letter rast)
 NFA getNFA(ast.Sequence rasts)
 {
 	auto result = NFA.createNFA();
-	foreach(rast; rasts.sequenceOfRegexASTs)
+	foreach(rast; rasts.regexASTs)
 	{
 		result.append( getNFA(rast) );
 	}
@@ -40,14 +40,14 @@ NFA getNFA(ast.Sequence rasts)
 
 NFA getNFA(ast.Optional rast)
 {
-	auto r = getNFA( rast.optionalRegexAST );
+	auto r = getNFA( rast.regexAST );
 	r.makeOptional();
 	return r;
 }
 
 NFA getNFA(ast.Repeat rast)
 {
-	auto r = getNFA( rast.repeatableRegexAST );
+	auto r = getNFA( rast.regexAST );
 	r.makeRepeat();
 	r.makeOptional();
 	return r;
