@@ -2,7 +2,6 @@ module dlex;
 
 
 
-import std.array:empty;
 import dlex.regex;
 
 
@@ -85,11 +84,11 @@ struct TokenStream
 	}
 
 
+	static import nostd.array;
 	@property
 	bool empty()
 	{
-
-		return input[startAt..$].empty;
+		return nostd.array.empty(input[startAt..$]);
 	}
 
 

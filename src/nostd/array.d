@@ -25,3 +25,19 @@ unittest
 {
 	assert(join(["a","b","c"],",") == "a,b,c");
 }
+
+
+
+
+
+bool empty(T)(T[] xs)
+{
+	return xs.length == 0;
+}
+
+unittest
+{
+	assert(![1,2].empty);
+	assert(!["1,2"].empty);
+	assert([].empty);
+}

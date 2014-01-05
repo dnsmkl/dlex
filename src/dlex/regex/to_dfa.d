@@ -5,7 +5,7 @@ import dlex.regex.nfa;
 import dlex.regex.dfa;
 
 
-import std.array:empty;
+import nostd.array:empty;
 
 
 
