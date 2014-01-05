@@ -163,6 +163,7 @@ class Letter:RegexAST
 	}
 }
 
+
 // TODO: Implement RepeatBounded, which can be converted to Optional + lots of copying
 unittest
 {
@@ -197,9 +198,3 @@ unittest
 		, "Seq[L(a),L(b),L(c),L(d)]"
 	);
 }
-
-
-
-
-
-
