@@ -159,6 +159,32 @@ struct NFA
 	/* Union of NFA. Modify 'this', do not modify 'other'. */
 	void addUnion(NFA other)
 	{
+		// in case this is empty, just copy everything from other
+		if(this.states.length == 1 && this.transitions.length == 0)
+		{
+				this.states = other.states;
+				this.starts = other.starts;
+				this.ends = other.ends;
+				this.transitions = other.transitions;
+				this.transitionLaziness = other.transitionLaziness;
+				return;
+		}
+
+		// in case both are simple, keep also result simple
+		if(this.states.length == 2
+			&& other.states.length == 2
+			&& this.transitions.length == 1
+			&& other.transitions.length == 1
+			&& this.ends.length == 1
+			&& other.ends.length == 1)
+		{
+
+			foreach(otherLetter,trg; other.transitions[other.starts[0]])
+				addTransitionToExisting(this.starts[0], otherLetter, this.ends[0].stateId);
+			return;
+		}
+
+
 		auto incrementNeeded = states.length-1;
 
 		// append states
