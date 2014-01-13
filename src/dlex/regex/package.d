@@ -156,13 +156,12 @@ unittest
 	auto testLazyPlus = Regex("[ab]+?b+");
 	assert( testLazyPlus.matchStart("aabbbabb").text == "aabbb");
 
-	// following tests just document bad behaviour
-	auto testLazyStar2 = Regex("a*?");
-	assert( testLazyStar2.matchStart("aaaa").text == "a");
+	auto testLazyStarLonely = Regex("a*?");
+	assert( testLazyStarLonely.matchStart("aaaa").text == "");
 
-	auto testLonelyLazyPlus = Regex("a+?");
-	assert( testLonelyLazyPlus.matchStart("aaa").text == "aa");
+	auto testLazyQmarkLonely = Regex("a??");
+	assert( testLazyQmarkLonely.matchStart("aaa").text == "");
 
-	auto testLazyQmark = Regex("a??");
-	assert( testLazyQmark.matchStart("aaa").text == "a");
+	auto testLonelyLazyPlusLonely = Regex("a+?");
+	assert( testLonelyLazyPlusLonely.matchStart("aaa").text == "a");
 }

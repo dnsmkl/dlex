@@ -157,12 +157,16 @@ struct Builder(
 
 	void markEnd(StateIdNFA[] state)
 	{
+		foreach(end; this.dfa.ends)
+			if(end.stateId == states.getStateId(state)) return; // skip adding if already marked as end
 		this.dfa.ends ~= TaggedEnd(states.getStateId(state), Tag.init, 0);
 	}
 
 	void markEndTagged(StateIdNFA[] state, Tag tag, uint rank)
 	{
 		states.addState(state);
+		foreach(end; this.dfa.ends)
+			if(end.stateId == states.getStateId(state)) return; // skip adding if already marked as end
 		this.dfa.ends ~= TaggedEnd(states.getStateId(state), tag, rank);
 	}
 

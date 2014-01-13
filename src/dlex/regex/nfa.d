@@ -75,8 +75,8 @@ struct NFA
 		foreach(start;starts)
 		{
 			markAsEnd(start);
-			foreach(bool[StateId] targetLaziness; transitionLaziness[start])
-				foreach(bool l; targetLaziness) l = laziness;
+			foreach(ref bool[StateId] targetLaziness; transitionLaziness[start])
+				foreach(ref bool l; targetLaziness) l = laziness;
 
 		}
 	}
@@ -121,7 +121,8 @@ struct NFA
 				{
 					foreach(otherTargetStateId; otherTargets)
 					{
-						addTransitionToExisting(end.stateId, otherletter, otherTargetStateId+incrementNeeded);
+						addTransitionToExisting(end.stateId, otherletter, otherTargetStateId+incrementNeeded
+							,other.transitionLaziness[otherStartStateId][otherletter][otherTargetStateId]);
 					}
 				}
 			}
