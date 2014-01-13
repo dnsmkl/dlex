@@ -94,7 +94,6 @@ struct TokenStream
 
 	void popFront()
 	{
-
 		startAt += front().tokenText.length;
 	}
 }
