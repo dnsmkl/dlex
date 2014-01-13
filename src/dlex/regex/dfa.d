@@ -287,7 +287,7 @@ struct Matcher(
 	Match partialMatch(string text)
 	{
 		auto match = Match(false, size_t.max, Tag.init);
-		uint bestRank = uint.max;
+		uint bestRank = uint.max; // Lower is better. Start with worst
 
 		DFA.StateId currentState = this.dfa.start;
 		size_t count = 0; // number of characters that went into currentState
