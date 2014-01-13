@@ -217,6 +217,18 @@ struct Matcher(
 	DFA dfa;
 
 
+	void saveOnAccept(ref Match match, ref uint bestRank
+		, size_t count, DFA.StateId currentState)
+	{
+		if( isAcceptedEnd(currentState, bestRank) )
+		{
+			match.count = count;
+			match.match = true;
+			match.tag = getEndTag(currentState);
+			bestRank = getEndRank(currentState);
+		}
+	}
+
 	bool isAcceptedEnd(DFA.StateId stateId, uint rankToBeat)
 	{
 		foreach(s; this.dfa.ends)
@@ -278,31 +290,19 @@ struct Matcher(
 		uint bestRank = uint.max;
 
 		DFA.StateId currentState = this.dfa.start;
-		if( isAcceptedEnd(currentState, bestRank) )
-		{
-			match.count = 0;
-			match.match = true;
-			match.tag = getEndTag(currentState);
-			bestRank = getEndRank(currentState);
-		}
+		size_t count = 0; // number of characters that went into currentState
 
-		size_t count = 1;
+		saveOnAccept(match, bestRank, count, currentState);
 
 		foreach(char c; text)
 		{
 			if( currentState !in this.dfa.transitions ) break;
 			if( c !in this.dfa.transitions[currentState] ) break;
 			currentState = this.dfa.transitions[currentState][c];
+			++count;
 
 			// Mark possible success, but continue to find longest match
-			if( isAcceptedEnd(currentState, bestRank) )
-			{
-				match.count = count;
-				match.match = true;
-				match.tag = getEndTag(currentState);
-				bestRank = getEndRank(currentState);
-			}
-			++count;
+			saveOnAccept(match,bestRank,count,currentState);
 		}
 		return match;
 	}
