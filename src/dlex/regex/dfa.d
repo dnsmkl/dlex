@@ -286,7 +286,7 @@ struct Matcher(
 			bestRank = getEndRank(currentState);
 		}
 
-		size_t index = 1;
+		size_t count = 1;
 
 		foreach(char c; text)
 		{
@@ -297,12 +297,12 @@ struct Matcher(
 			// Mark possible success, but continue to find longest match
 			if( isAcceptedEnd(currentState, bestRank) )
 			{
-				match.count = index; // convert to 1-based
+				match.count = count;
 				match.match = true;
 				match.tag = getEndTag(currentState);
 				bestRank = getEndRank(currentState);
 			}
-			++index;
+			++count;
 		}
 		return match;
 	}
