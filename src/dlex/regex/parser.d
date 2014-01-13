@@ -21,7 +21,7 @@ enum Par{both, none, right};
    Note: Index is incremented to notify calling frame, how much input was parsed
 */
 private
-RegexAST recursiveParse(Par paranthesis = Par.none)(string regexText, ref size_t currentIndex)
+RegexAST recursiveParse(Par paranthesis)(string regexText, ref size_t currentIndex)
 {
 	static if(paranthesis == Par.both)
 	{
