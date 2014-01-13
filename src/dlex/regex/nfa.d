@@ -117,12 +117,12 @@ struct NFA
 		{
 			foreach(otherStartStateId ; other.starts)
 			{
-				foreach(otherletter, otherTargets; other.transitions[otherStartStateId])
+				foreach(otherLetter, otherTargets; other.transitions[otherStartStateId])
 				{
 					foreach(otherTargetStateId; otherTargets)
 					{
-						addTransitionToExisting(end.stateId, otherletter, otherTargetStateId+incrementNeeded
-							,other.transitionLaziness[otherStartStateId][otherletter][otherTargetStateId]);
+						addTransitionToExisting(end.stateId, otherLetter, otherTargetStateId+incrementNeeded
+							,other.transitionLaziness[otherStartStateId][otherLetter][otherTargetStateId]);
 					}
 				}
 			}
